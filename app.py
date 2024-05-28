@@ -180,4 +180,4 @@ def fetch_tmdb_recommendations(id, is_movie=True, max_recommendations=50):
     return recommendations[:max_recommendations]
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
