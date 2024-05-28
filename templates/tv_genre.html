@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ genre_name }} TV Shows</title>
+    <style>
+        body {
+            background-color: #0e0e0e;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 36px;
+        }
+
+        .movie-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .movie-card {
+            background-color: #5f5b5b;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px;
+            width: 150px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .movie-card a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .movie-card img {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .movie-card h3 {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ genre_name }} TV Shows</h1>
+        <div class="movie-grid">
+            {% for show in shows %}
+                <div class="movie-card">
+                    <a href="https://www.themoviedb.org/tv/{{ show.id }}" target="_blank" rel="noopener noreferrer"></a>
+                    <img src="https://image.tmdb.org/t/p/w500{{ show.poster_path }}" alt="{{ show.name }} Poster">
+                    <h3>{{ show.name }}</h3>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
