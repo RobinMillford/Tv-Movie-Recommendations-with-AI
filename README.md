@@ -25,6 +25,8 @@ Check out the live demo of the application deployed on Render [here](https://tv-
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/FlickFinder%201.png)
 
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/chatapi.png)
+
 ## Getting Started
 
 ### Prerequisites
