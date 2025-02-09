@@ -1,4 +1,4 @@
-# Movie and TV Show Recommendation App With Ai
+# Movie and TV Show Recommendation App With AI
 
 This is a Flask web application that allows users to get recommendations for movies and TV shows based on genres and specific titles. The application uses The Movie Database (TMDb) API to fetch movie and TV show data.
 
@@ -14,6 +14,16 @@ This is a Flask web application that allows users to get recommendations for mov
 ## Live Demo
 
 Check out the live demo of the application deployed on Render [here](https://tv-movie-recommendations.onrender.com/).
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%201.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Recommendations%202.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommender-System%201.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommendations%202.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/FlickFinder%201.png)
 
 ## Getting Started
 
