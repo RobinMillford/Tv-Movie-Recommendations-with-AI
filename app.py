@@ -7,6 +7,7 @@ from langchain_groq import ChatGroq
 from langchain.schema import AIMessage, HumanMessage
 from langchain.prompts import PromptTemplate
 import json
+import re
 
 # Load environment variables
 load_dotenv()
@@ -215,6 +216,7 @@ def fetch_tmdb_recommendations(id, is_movie=True, max_recommendations=50):
 def chat():
     return render_template("chat.html")  # Ensure chat.html exists in 'templates/'
 
+
 chat_sessions = {}
 
 @app.route("/chat_api", methods=["POST"])
@@ -224,7 +226,10 @@ def chat_api():
         return jsonify({"error": "Message is required"}), 400
 
     session_id = request.remote_addr  # Using IP as a session identifier
-    chat_sessions[session_id] = []  # Reset chat history on each request
+
+    # Preserve chat history instead of resetting on each request
+    if session_id not in chat_sessions:
+        chat_sessions[session_id] = []
 
     formatted_history = [
         HumanMessage(content=msg["content"]) if msg["type"] == "human"
@@ -234,26 +239,65 @@ def chat_api():
 
     formatted_history.append(HumanMessage(content=user_message))
 
-    # **🔵 Check if user asked for latest movies**
-    if "latest movies" in user_message.lower() or "newly released" in user_message.lower():
-        url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
-        time.sleep(1)  # ✅ Adding delay before request
-        response = requests.get(url).json()
-        latest_movies = response.get("results", [])
+# **🔵 Check if user asked for latest movies or TV shows**
+    if any(keyword in user_message.lower() for keyword in ["latest movies", "newly released movies", "latest tv shows", "newly released tv shows"]):
 
         media_data = {"movies": [], "tv_shows": []}
+
+    # 🔹 Fetch latest movies
+        movie_url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
+        try:
+            movie_response = requests.get(movie_url)
+            movie_response.raise_for_status()
+            movie_data = movie_response.json()
+            latest_movies = movie_data.get("results", [])[:5]  # Limit to top 5 movies
+        except requests.RequestException as e:
+            latest_movies = []
+            print(f"⚠️ Error fetching latest movies: {e}")
+
+    # 🔹 Fetch latest TV shows
+        tv_url = f"https://api.themoviedb.org/3/tv/on_the_air?api_key={TMDB_API_KEY}&language=en-US&page=1"
+        try:
+            tv_response = requests.get(tv_url)
+            tv_response.raise_for_status()
+            tv_data = tv_response.json()
+            latest_tv_shows = tv_data.get("results", [])[:5]  # Limit to top 5 TV shows
+        except requests.RequestException as e:
+            latest_tv_shows = []
+            print(f"⚠️ Error fetching latest TV shows: {e}")
+
+        # 🟢 Format movie data
         for movie in latest_movies:
             media_data["movies"].append({
                 "title": movie["title"],
+                "year": movie.get("release_date", "Unknown")[:4],  # Extract year from release_date
                 "poster_url": f"https://image.tmdb.org/t/p/w500{movie['poster_path']}" if movie.get("poster_path") else "https://via.placeholder.com/500x750?text=No+Image",
                 "tmdb_link": f"https://www.themoviedb.org/movie/{movie['id']}"
             })
 
-        return jsonify({"reply": "Here are the latest released movies:", "movies": media_data["movies"]})
+        # 🟢 Format TV show data
+        for tv_show in latest_tv_shows:
+            media_data["tv_shows"].append({
+                "title": tv_show["name"],
+                "year": tv_show.get("first_air_date", "Unknown")[:4],  # Extract year from first_air_date
+                "poster_url": f"https://image.tmdb.org/t/p/w500{tv_show['poster_path']}" if tv_show.get("poster_path") else "https://via.placeholder.com/500x750?text=No+Image",
+                "tmdb_link": f"https://www.themoviedb.org/tv/{tv_show['id']}"
+            })
 
+        # 🟢 Prepare Response
+        if not media_data["movies"] and not media_data["tv_shows"]:
+            return jsonify({"reply": "No latest movies or TV shows found at the moment.", "movies": [], "tv_shows": []})
+
+        return jsonify({
+            "reply": "Here are the latest released movies and TV shows:",
+            "movies": media_data["movies"],
+            "tv_shows": media_data["tv_shows"]
+        })
+
+    # 🔵 Get bot response
     bot_response = conversation_chain.invoke({"chat_history": formatted_history, "user_input": user_message})
     bot_reply = bot_response.content.strip()
-    
+
     if not bot_reply:
         return jsonify({"error": "Bot response is empty. Please try again."}), 500
 
@@ -264,20 +308,30 @@ def chat_api():
         for msg in formatted_history
     ]
 
-    # **🔵 LLM Prompt to Extract Movie & TV Show Names**
+    # **🔵 LLM Prompt to Extract Movie & TV Show Names with Year**
     llm_prompt = f"""
-    You are an expert text analyzer. Your task is to extract **movie**, **TV show**, **anime movie**, and **anime series** names from the chatbot response.
+    You are an expert text analyzer. Your task is to extract **movie**, **TV show**, **anime movie**, and **anime series** names along with their release years from the chatbot response.
 
     **Instructions:**
     - Identify and extract **movie titles**, including **anime movies**, if they exist.
     - Identify and extract **TV show titles**, including **anime series**, if they exist.
+    - If a title has a **release year** mentioned in the response, extract that too.
+    - If no year is mentioned, return null for that title.
     - If no movies, anime movies, TV shows, or anime series are found, return an empty list for both.
     - Return only **valid JSON output**, and **do NOT add any extra text or explanations**.
 
     **Example JSON Format:**
     {{
-    "movies": ["Inception", "Titanic", "Your Name"],  # "Your Name" is an anime movie
-    "tv_shows": ["Breaking Bad", "Friends", "Attack on Titan"]  # "Attack on Titan" is an anime series
+        "movies": [
+            {{"title": "Inception", "year": 2010}},
+            {{"title": "Titanic", "year": 1997}},
+            {{"title": "Your Name", "year": 2016}}
+        ],
+        "tv_shows": [
+            {{"title": "Breaking Bad", "year": 2008}},
+            {{"title": "Friends", "year": 1994}},
+            {{"title": "Attack on Titan", "year": 2013}}
+        ]
     }}
 
     **Chatbot Response to Process:**
@@ -286,48 +340,45 @@ def chat_api():
     Extract and return **ONLY** the JSON.
     """
 
-    # 🔵 Invoke LLM to extract movie & TV show names
+    # 🔵 Invoke LLM to extract movie & TV show names along with the release year
     analysis_response = chatbot.invoke(llm_prompt)
-    print("🟢 LLM Raw Response:", analysis_response.content)  # Debugging output
-
     try:
         analysis_data = json.loads(analysis_response.content)
-        movie_names = analysis_data.get("movies", [])
-        tv_show_names = analysis_data.get("tv_shows", [])
+        movie_data = analysis_data.get("movies", [])
+        tv_show_data = analysis_data.get("tv_shows", [])
     except json.JSONDecodeError:
         return jsonify({"reply": bot_reply, "error": "Invalid JSON format from analysis."})
-
-    print("🟢 Extracted Movies:", movie_names)  # Debugging output
-    print("🟢 Extracted TV Shows:", tv_show_names)  # Debugging output
 
     media_data = {"movies": [], "tv_shows": []}
 
     # **🔵 Fetch Movie & TV Show Details from TMDB**
-    for media_names, media_type, key in [(movie_names, "movie", "movies"), (tv_show_names, "tv", "tv_shows")]:
-        for name in media_names:
-            try:
-                url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={name}&page=1&include_adult=true"
-                time.sleep(1)  # ✅ Adding delay before each TMDB request
-                response = requests.get(url).json()
-                results = response.get("results", [])
+    for media_list, media_type, key in [(movie_data, "movie", "movies"), (tv_show_data, "tv", "tv_shows")]:
+        for media in media_list:
+            title = media["title"]
+            year = media["year"]
 
-                if not results:
-                    print(f"⚠️ No {media_type} results found for:", name)
-                    continue  # Skip to next item
+            # 🔹 Construct TMDB search request
+            url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true"
+            if year:  # Add year filter if available
+                url += f"&year={year}"
 
-                media = results[0]  # Taking the first search result
-                media_id = media.get("id")
-                poster_path = media.get("poster_path")
+            response = requests.get(url).json()
+            results = response.get("results", [])
 
-                media_data[key].append({  # ✅ Use the correct key
-                    "title": media["title"] if media_type == "movie" else media["name"],
-                    "poster_url": f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image",
-                    "tmdb_link": f"https://www.themoviedb.org/{media_type}/{media_id}"
-                })
-            except Exception as e:
-                print(f"❌ Error fetching {media_type} details for {name}: {e}")
+            if not results:
+                print(f"⚠️ No {media_type} results found for:", title)
+                continue  # Skip to next item
 
-    print("🟢 Final Media Data:", media_data)  # Debugging output
+            media_info = results[0]  # Taking the first search result
+            media_id = media_info.get("id")
+            poster_path = media_info.get("poster_path")
+
+            media_data[key].append({
+                "title": media_info["title"] if media_type == "movie" else media_info["name"],
+                "year": media_info.get("release_date", "Unknown")[:4] if media_type == "movie" else media_info.get("first_air_date", "Unknown")[:4],
+                "poster_url": f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image",
+                "tmdb_link": f"https://www.themoviedb.org/{media_type}/{media_id}"
+            })
 
     # **🔵 Prepare JSON Response**
     response_data = {"reply": bot_reply}

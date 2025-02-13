@@ -28,6 +28,14 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+        }
+
+        body {
+            background: url("https://i.gifer.com/U1c.gif") no-repeat center center fixed;
+            background-size: cover;
         }
 
         #chat-widget {
@@ -35,7 +43,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: #000000;
+            /* background: #000000; */
             color: white;
             overflow: hidden;
         }
@@ -76,7 +84,7 @@
         }
 
         .bot {
-            background: #000000;
+            background: #444444;
             color: #40e723;
             align-self: flex-start;
             text-align: left;
@@ -107,7 +115,7 @@
             border: none;
             outline: none;
             font-size: 16px;
-            background: #333;
+            background: #000000;
             color: white;
             border-radius: 8px;
         }
@@ -199,7 +207,7 @@
         <div id="chat-messages"></div>
 
         <div id="input-area">
-            <input type="text" id="user-input" placeholder="Ask about a movie or TV show..." autofocus>
+            <input type="text" id="user-input" placeholder="Ask about a movie or TV show.... for new movies and shows add latest and year" autofocus>
             <button id="send-button">Send</button>
         </div>
     </div>
