@@ -55,9 +55,9 @@
             background-color: #2c2424cb;
             color: #ffffff;
             font-size: 16px;
-            width: 700px;
+            width: 800px;
             margin-right: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 75px;
         }
 
         input[type="submit"] {
@@ -328,7 +328,69 @@
         margin-top: 10px;
         color: white;
     }
+    .recent-container {
+    width: 100%;
+    max-width: 1300px; /* Increased max-width for larger screen sizes */
+    margin: 30px auto; /* Increased margin for better spacing */
+    text-align: center;
+}
 
+.recent-title {
+    font-size: 28px; /* Larger font for the title */
+    font-family: Cooper Black, sans-serif;
+    color: white;
+    margin-bottom: 30px; /* Increased margin for better spacing */
+}
+
+.recent-slider {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 30px; /* Increased gap for better spacing between cards */
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px; /* Slightly increased border-radius for a smoother look */
+    scrollbar-width: none; /* Hide scrollbar */
+}
+
+.recent-slider::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari */
+}
+
+.movie-card1 {
+    flex: 0 0 auto;
+    width: 300px; /* Increased width for better viewing of the trailers */
+    text-align: center;
+    background-color: rgba(51, 51, 51, 0.8);
+    padding: 10px; /* Added more padding for better aesthetics */
+    border-radius: 8px; /* Slightly rounded corners */
+    transition: transform 0.3s;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); /* Added shadow for better visual effect */
+}
+
+.movie-card1:hover {
+    transform: scale(1.05);
+}
+
+.movie-card1 iframe {
+    width: 100%;
+    height: 250px; /* Increased height for better aspect ratio for trailers */
+    border-radius: 8px;
+    border: none;
+}
+
+.movie-card1 h3 {
+    font-size: 18px; /* Larger font size for better readability */
+    margin-top: 15px; /* More space between title and trailer */
+    color: white;
+    word-wrap: break-word; /* Ensure long movie titles don't overflow */
+}
+
+.movie-card1 img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px; /* Matching rounded corners with the iframe */
+}
     </style>
 </head>
 <body>
@@ -353,7 +415,6 @@
     <div class="trending-container">
         <h2 class="trending-title">Trending Movies</h2>
         <div class="trending-slider" id="trending-slider">
-            <!-- Movie cards will be inserted here dynamically -->
         </div>
     </div>
     <script>
@@ -362,7 +423,7 @@
         });
     
         function fetchTrendingMovies() {
-            fetch("https://api.themoviedb.org/3/trending/movie/week?api_key=c7ec19ffdd3279641fb606d19ceb9bb1")
+            fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key={{ api_key }}`)
             .then(response => response.json())
             .then(data => {
                 const slider = document.getElementById("trending-slider");
@@ -383,14 +444,118 @@
             })
             .catch(error => console.error("Error fetching trending movies:", error));
         }
-    </script>
+    </script>    
     <form autocomplete="off" action="/recommend" method="post">
         <label for="movie_name">Search for a movie:</label>
         <input type="text" id="movie_name" name="movie_name" placeholder="Search for a movie...">
         <input type="submit" value="Show Recommendations">
         <div class="autocomplete-items" id="autocomplete-items"></div>
     </form>
+    <div class="recent-container">
+        <h2 class="recent-title">Recent and Upcoming Movies</h2>
+        <div class="recent-slider" id="recent-slider">
+            <!-- Trailers will be inserted here dynamically -->
+        </div>         
+    </div>
+    <script>
+const API_KEY = "{{ api_key }}"; 
+const BASE_URL = 'https://api.themoviedb.org/3';
 
+// Fetch movies from both "Now Playing" and "Upcoming" categories
+async function fetchMovies() {
+    const nowPlayingUrl = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`;
+    const upcomingUrl = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`;
+
+    try {
+        const [nowPlayingResponse, upcomingResponse] = await Promise.all([
+            fetch(nowPlayingUrl),
+            fetch(upcomingUrl)
+        ]);
+
+        const nowPlayingData = await nowPlayingResponse.json();
+        const upcomingData = await upcomingResponse.json();
+        
+        const movies = [...nowPlayingData.results, ...upcomingData.results];
+
+        // Fetch trailers for all movies
+        const trailerPromises = movies.map(movie => fetchMovieTrailer(movie.id));
+        const trailers = await Promise.all(trailerPromises);
+
+        // Filter movies that have trailers
+        const filteredMovies = movies.filter((_, index) => trailers[index] !== null);
+        const filteredTrailers = trailers.filter(trailer => trailer !== null);
+
+        // Display movies with trailers
+        displayMovies(filteredMovies, filteredTrailers, "Latest Trailers");
+
+    } catch (error) {
+        console.error("Error fetching movies:", error);
+    }
+}
+
+// Fetch movie trailers
+async function fetchMovieTrailer(movieId) {
+    const url = `${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Prioritize official trailers, then teasers
+        let trailer = data.results.find(video => video.type === 'Trailer' && video.site === "YouTube" && video.official);
+        if (!trailer) {
+            trailer = data.results.find(video => video.type === 'Teaser' && video.site === "YouTube");
+        }
+        if (!trailer) {
+            trailer = data.results.find(video => video.site === "YouTube");
+        }
+
+        return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+
+    } catch (error) {
+        console.error(`Error fetching trailer for movie ID ${movieId}:`, error);
+        return null;
+    }
+}
+
+// Display movies and their trailers
+function displayMovies(movies, trailers, sectionTitle) {
+    const slider = document.getElementById('recent-slider');
+    slider.innerHTML = ''; // Clear previous content
+
+    movies.forEach((movie, index) => {
+        const movieCard = document.createElement('div');
+        movieCard.classList.add('movie-card1');
+
+        if (trailers[index]) {
+            // Embed the YouTube trailer
+            const iframe = document.createElement('iframe');
+            iframe.src = trailers[index];
+            iframe.allowFullscreen = true;
+            movieCard.appendChild(iframe);
+        } else {
+            // Show the movie poster if no trailer is available
+            const poster = document.createElement('img');
+            poster.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            poster.alt = movie.title;
+            poster.classList.add('movie-poster');
+            movieCard.appendChild(poster);
+        }
+
+        // Movie Title (Clickable)
+        const movieTitle = document.createElement('h3');
+        movieTitle.textContent = movie.title;
+        movieTitle.classList.add('movie-title');
+        movieTitle.onclick = () => window.open(`https://www.themoviedb.org/movie/${movie.id}`, '_blank');
+        movieCard.appendChild(movieTitle);
+
+        slider.appendChild(movieCard);
+    });
+}
+
+// Load trailers on page load
+fetchMovies();
+    </script>        
     <!-- Categories -->
     <div class="category-container">
         <h2 class="category-title">Top Categories</h2>
@@ -439,7 +604,7 @@
             var autocompleteContainer = document.getElementById("autocomplete-items");
             autocompleteContainer.innerHTML = "";
 
-            fetch(`https://api.themoviedb.org/3/search/movie?api_key=c7ec19ffdd3279641fb606d19ceb9bb1&language=en-US&query=${input}&page=1&include_adult=true`)
+            fetch(`https://api.themoviedb.org/3/search/movie?api_key={{ api_key }}&language=en-US&query=${input}&page=1&include_adult=true`)
             .then(response => response.json())
             .then(data => {
                 data.results.forEach(movie => {

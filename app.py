@@ -16,6 +16,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+TMDB_API_KEY_2 = os.getenv("TMDB_API_KEY_2")
 GROQ_API_KEY = os.getenv("groq_api_key")
 
 
@@ -46,11 +47,11 @@ def fetch_shows_by_genre(genre_id, max_shows=50):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', api_key=TMDB_API_KEY_2)
 
 @app.route('/tv_shows')
 def tv_shows():
-    return render_template('tv_shows.html')
+    return render_template('tv_shows.html', api_key=TMDB_API_KEY_2)
 
 @app.route('/genre/<genre_name>')
 def genre_page(genre_name):
