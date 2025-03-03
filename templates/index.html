@@ -461,32 +461,42 @@
 const API_KEY = "{{ api_key }}"; 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-// Fetch movies from both "Now Playing" and "Upcoming" categories
+// Fetch only "Upcoming" movies and their trailers without repetition
 async function fetchMovies() {
-    const nowPlayingUrl = `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`;
     const upcomingUrl = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`;
+    const currentYear = new Date().getFullYear();
+    const trailerSet = new Set(); // Store unique trailer URLs
 
     try {
-        const [nowPlayingResponse, upcomingResponse] = await Promise.all([
-            fetch(nowPlayingUrl),
-            fetch(upcomingUrl)
-        ]);
-
-        const nowPlayingData = await nowPlayingResponse.json();
+        const upcomingResponse = await fetch(upcomingUrl);
         const upcomingData = await upcomingResponse.json();
         
-        const movies = [...nowPlayingData.results, ...upcomingData.results];
+        let movies = upcomingData.results;
 
-        // Fetch trailers for all movies
+        // 🔹 Remove old movies (ensure only recent/upcoming movies)
+        movies = movies.filter(movie => {
+            const movieYear = movie.release_date ? parseInt(movie.release_date.split('-')[0]) : currentYear;
+            return movieYear >= currentYear; // Only include movies releasing this year or later
+        });
+
+        // 🔹 Fetch trailers for all upcoming movies
         const trailerPromises = movies.map(movie => fetchMovieTrailer(movie.id));
         const trailers = await Promise.all(trailerPromises);
 
-        // Filter movies that have trailers
-        const filteredMovies = movies.filter((_, index) => trailers[index] !== null);
-        const filteredTrailers = trailers.filter(trailer => trailer !== null);
+        // 🔹 Filter movies that have unique trailers
+        const filteredMovies = [];
+        const filteredTrailers = [];
 
-        // Display movies with trailers
-        displayMovies(filteredMovies, filteredTrailers, "Latest Trailers");
+        trailers.forEach((trailer, index) => {
+            if (trailer && !trailerSet.has(trailer)) { // Avoid duplicate trailers
+                trailerSet.add(trailer);
+                filteredMovies.push(movies[index]);
+                filteredTrailers.push(trailer);
+            }
+        });
+
+        // 🔹 Display upcoming movies with trailers
+        displayMovies(filteredMovies, filteredTrailers, "Upcoming Movie Trailers");
 
     } catch (error) {
         console.error("Error fetching movies:", error);
@@ -527,20 +537,11 @@ function displayMovies(movies, trailers, sectionTitle) {
         const movieCard = document.createElement('div');
         movieCard.classList.add('movie-card1');
 
-        if (trailers[index]) {
-            // Embed the YouTube trailer
-            const iframe = document.createElement('iframe');
-            iframe.src = trailers[index];
-            iframe.allowFullscreen = true;
-            movieCard.appendChild(iframe);
-        } else {
-            // Show the movie poster if no trailer is available
-            const poster = document.createElement('img');
-            poster.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-            poster.alt = movie.title;
-            poster.classList.add('movie-poster');
-            movieCard.appendChild(poster);
-        }
+        // Embed the YouTube trailer
+        const iframe = document.createElement('iframe');
+        iframe.src = trailers[index];
+        iframe.allowFullscreen = true;
+        movieCard.appendChild(iframe);
 
         // Movie Title (Clickable)
         const movieTitle = document.createElement('h3');

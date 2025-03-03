@@ -240,62 +240,7 @@ def chat_api():
 
     formatted_history.append(HumanMessage(content=user_message))
 
-# **🔵 Check if user asked for latest movies or TV shows**
-    if any(keyword in user_message.lower() for keyword in ["latest movies", "newly released movies", "latest tv shows", "newly released tv shows"]):
-
-        media_data = {"movies": [], "tv_shows": []}
-
-    # 🔹 Fetch latest movies
-        movie_url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
-        try:
-            movie_response = requests.get(movie_url)
-            movie_response.raise_for_status()
-            movie_data = movie_response.json()
-            latest_movies = movie_data.get("results", [])[:5]  # Limit to top 5 movies
-        except requests.RequestException as e:
-            latest_movies = []
-            print(f"⚠️ Error fetching latest movies: {e}")
-
-    # 🔹 Fetch latest TV shows
-        tv_url = f"https://api.themoviedb.org/3/tv/on_the_air?api_key={TMDB_API_KEY}&language=en-US&page=1"
-        try:
-            tv_response = requests.get(tv_url)
-            tv_response.raise_for_status()
-            tv_data = tv_response.json()
-            latest_tv_shows = tv_data.get("results", [])[:5]  # Limit to top 5 TV shows
-        except requests.RequestException as e:
-            latest_tv_shows = []
-            print(f"⚠️ Error fetching latest TV shows: {e}")
-
-        # 🟢 Format movie data
-        for movie in latest_movies:
-            media_data["movies"].append({
-                "title": movie["title"],
-                "year": movie.get("release_date", "Unknown")[:4],  # Extract year from release_date
-                "poster_url": f"https://image.tmdb.org/t/p/w500{movie['poster_path']}" if movie.get("poster_path") else "https://via.placeholder.com/500x750?text=No+Image",
-                "tmdb_link": f"https://www.themoviedb.org/movie/{movie['id']}"
-            })
-
-        # 🟢 Format TV show data
-        for tv_show in latest_tv_shows:
-            media_data["tv_shows"].append({
-                "title": tv_show["name"],
-                "year": tv_show.get("first_air_date", "Unknown")[:4],  # Extract year from first_air_date
-                "poster_url": f"https://image.tmdb.org/t/p/w500{tv_show['poster_path']}" if tv_show.get("poster_path") else "https://via.placeholder.com/500x750?text=No+Image",
-                "tmdb_link": f"https://www.themoviedb.org/tv/{tv_show['id']}"
-            })
-
-        # 🟢 Prepare Response
-        if not media_data["movies"] and not media_data["tv_shows"]:
-            return jsonify({"reply": "No latest movies or TV shows found at the moment.", "movies": [], "tv_shows": []})
-
-        return jsonify({
-            "reply": "Here are the latest released movies and TV shows:",
-            "movies": media_data["movies"],
-            "tv_shows": media_data["tv_shows"]
-        })
-
-    # 🔵 Get bot response
+    # **🔵 Get Bot Response**
     bot_response = conversation_chain.invoke({"chat_history": formatted_history, "user_input": user_message})
     bot_reply = bot_response.content.strip()
 
@@ -349,6 +294,12 @@ def chat_api():
         tv_show_data = analysis_data.get("tv_shows", [])
     except json.JSONDecodeError:
         return jsonify({"reply": bot_reply, "error": "Invalid JSON format from analysis."})
+
+    # **🔵 If LLM Fails to Recognize the Movie/TV Show, Ask for More Context**
+    if not movie_data and not tv_show_data:
+        return jsonify({
+            "reply": "I couldn't find this movie or TV show. Could you provide more details like the year, synopsis, or any actors?"
+        })
 
     media_data = {"movies": [], "tv_shows": []}
 

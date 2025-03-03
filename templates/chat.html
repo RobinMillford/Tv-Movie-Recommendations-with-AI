@@ -101,7 +101,7 @@
             50% { opacity: 0.5; }
         }
 
-        #input-area {
+        /* #input-area {
             display: flex;
             padding: 10px;
             background: #000000;
@@ -118,13 +118,65 @@
             background: #000000;
             color: white;
             border-radius: 8px;
-        }
+        } */
+
+        #input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #000000; /* Darker background for contrast */
+    border-top: 2px solid #000000; /* Slightly lighter border */
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(255, 255, 255, 0.0); /* Soft top shadow */
+}
+
+textarea {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: #000000; /* Slightly lighter than background */
+    color: white;
+    border-radius: 8px;
+    resize: none; /* Prevents resizing */
+    height: 45px;
+    max-height: 100px; /* Prevents excessive growth */
+    overflow-y: auto; /* Scroll when needed */
+    transition: all 0.2s ease-in-out;
+}
+
+textarea:focus {
+    background: #1111; /* Slightly lighter on focus */
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+}
+
+#send-button {
+    background: #09E85E; /* Bright orange for visibility */
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    margin-left: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+#send-button:hover {
+    background: #ff4500; /* Slightly brighter on hover */
+}
+
+#send-button:active {
+    transform: scale(0.95); /* Click effect */
+}
 
         button {
             padding: 12px 15px;
             margin-left: 10px;
             background:  #09E85E;
-            color: white;
+            color: #ffffff;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -207,7 +259,7 @@
         <div id="chat-messages"></div>
 
         <div id="input-area">
-            <input type="text" id="user-input" placeholder="Ask about a movie or TV show.... for new movies and shows add latest and year" autofocus>
+            <textarea id="user-input" placeholder="Ask about a movie or TV show... Press Shift + Enter for a new line" rows="2"></textarea>
             <button id="send-button">Send</button>
         </div>
     </div>
@@ -222,6 +274,8 @@ function addMessage(sender, text) {
     messageElement.classList.add("message", sender);
     messageElement.textContent = text;
     chatMessages.appendChild(messageElement);
+
+    // Scroll to the latest message
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -230,9 +284,10 @@ async function sendMessage() {
     if (!userMessage) return;
 
     addMessage("user", userMessage);
-    userInput.value = "";
-    userInput.focus();  // Ensure input is focused after sending a message
+    userInput.value = "";  
+    userInput.focus();  
 
+    // Show typing indicator
     const typingIndicator = document.createElement("div");
     typingIndicator.classList.add("message", "typing");
     typingIndicator.textContent = "Bot is typing...";
@@ -272,7 +327,7 @@ async function sendMessage() {
         addMessage("bot", "Sorry, something went wrong. Please try again.");
     } finally {
         if (typingIndicator.parentNode) {
-            chatMessages.removeChild(typingIndicator);  // Always remove typing indicator
+            chatMessages.removeChild(typingIndicator);
         }
     }
 }
@@ -306,10 +361,15 @@ function displayMedia(items, type, container) {
     container.appendChild(section);
 }
 
-sendButton.addEventListener("click", sendMessage);
-userInput.addEventListener("keyup", (event) => {
-    if (event.key === "Enter") sendMessage();
+// Allow Shift + Enter for multiline input
+userInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault(); // Prevents new line
+        sendMessage();
+    }
 });
+
+sendButton.addEventListener("click", sendMessage);
     </script>
 
 </body>
