@@ -32,7 +32,7 @@
         font-size: 60px;
         font-family: Algerian, sans-serif;
         text-shadow: 4px 4px 4px #000000;
-        color: #ffffff; /* Blue color for the heading */
+        color: #ffffff;
     }
     
     form {
@@ -102,7 +102,7 @@
     }
     
     .autocomplete-items div:hover {
-        background-color: #003366; /* Darker blue color on hover */
+        background-color: #0077cc; /* Darker blue color on hover */
     }
     
     .category-container {
@@ -161,76 +161,107 @@
         font-size: 14px;
         margin-top: 10px;
     }
-    
-    .off-screen-menu {
-        background-color: rgba(0, 0, 0, 0.8);
-        height: 100%;
-        width: 0;
-        position: fixed;
-        top: 0;
-        right: 0;
-        overflow-x: hidden;
-        transition: 0.5s;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .off-screen-menu.active {
-        width: 250px;
-    }
-    
-    .off-screen-menu ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    
-    .off-screen-menu li {
-        margin-bottom: 20px;
-    }
-    
-    .off-screen-menu a {
-        text-decoration: none;
-        color: #ffffff;
-        font-size: 1.5rem;
-        transition: color 0.3s;
-    }
-    
-    .off-screen-menu a:hover {
-        color: #0077cc; /* Blue color on hover */
-    }
-    
-    .ham-menu {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        z-index: 1000;
-        margin-left: -1200px;
-        margin-right: 20px;
-    }
-    
-    .ham-menu span {
-        height: 3px;
-        width: 30px;
-        background-color: #ffffff;
-        margin: 4px 0;
-        transition: transform 0.3s, opacity 0.3s;
-    }
-    
-    .ham-menu.active span:nth-child(1) {
-        transform: translateY(8px) rotate(45deg);
-    }
-    
-    .ham-menu.active span:nth-child(2) {
-        opacity: 0;
-    }
-    
-    .ham-menu.active span:nth-child(3) {
-        transform: translateY(-8px) rotate(-45deg);
-    }
+
+    .header {
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(51, 51, 51, 0.0); /* Added background color */
+
+}
+
+.nav-link {
+    color: white;
+    font-size: 20px;
+    font-weight: 400;
+    display: flex;
+    gap: 15px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.nav-link a {
+    text-decoration: none;
+    color: white;
+    transition: color 0.3s;
+}
+
+.nav-link a:hover {
+    color: #0077cc;
+}
+
+/* Off-Screen Menu */
+.off-screen-menu {
+    background-color: rgba(0, 0, 0, 0.9);
+    height: 100%;
+    width: 0px; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    right: 0;
+    overflow-x: hidden;
+    transition: width 0.5s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.off-screen-menu.active {
+    width: 250px;
+}
+
+.off-screen-menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.off-screen-menu li {
+    margin-bottom: 20px;
+}
+
+.off-screen-menu a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 1.5rem;
+    transition: color 0.3s;
+}
+
+.off-screen-menu a:hover {
+    color: #0077cc;
+}
+
+/* Hamburger Menu */
+.ham-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1000;
+    position: absolute;
+    left: 20px; /* Position it properly */
+}
+
+.ham-menu span {
+    height: 3px;
+    width: 30px;
+    background-color: #ffffff;
+    margin: 5px 0;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.ham-menu.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.ham-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.ham-menu.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
 
 #trending-tv {
             width: 80%;
@@ -370,19 +401,27 @@
 </head>
 <body>
     <div>
-        <div class="off-screen-menu">
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/tv_shows">TV Shows & Anime</a></li>
-                <li><a href="/chat">Chat with Ai</a></li>
-            </ul>
+        <div class="header">
+            <div class="nav-link">
+                <a href="/">Home</a>
+                <!-- <a href="/tv_shows">TV Shows & Anime</a> -->
+                <a href="/chat">Chat with AI</a>
+            </div>      
         </div>
+    </div>
 
-        <div class="ham-menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+    <div class="off-screen-menu">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <!-- <li><a href="/tv_shows">TV Shows & Anime</a></li> -->
+            <li><a href="/chat">Chat with AI</a></li>
+        </ul>
+    </div>
+
+    <div class="ham-menu" onclick="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
 
     <h1>TV Show & Anime Recommender System</h1>
@@ -585,13 +624,21 @@ function displayRecentTVShows(tvShows, trailers) {
     </div>    
 
     <script>
-        const hamMenu = document.querySelector('.ham-menu');
-        const offScreenMenu = document.querySelector('.off-screen-menu');
+                document.addEventListener("DOMContentLoaded", () => {
+    const hamMenu = document.querySelector(".ham-menu");
+    const offScreenMenu = document.querySelector(".off-screen-menu");
 
-        hamMenu.addEventListener('click', () => {
-            hamMenu.classList.toggle('active');
-            offScreenMenu.classList.toggle('active');
+    if (hamMenu && offScreenMenu) {
+        hamMenu.addEventListener("click", () => {
+            const isActive = offScreenMenu.classList.toggle("active");
+            hamMenu.classList.toggle("active", isActive);
+
+            // Accessibility improvements
+            offScreenMenu.setAttribute("aria-expanded", isActive);
+            hamMenu.setAttribute("aria-label", isActive ? "Close menu" : "Open menu");
         });
+    }
+});
 
         document.getElementById("show_name").addEventListener("input", function() {
             var input = this.value.toLowerCase();
@@ -630,6 +677,6 @@ function displayRecentTVShows(tvShows, trailers) {
                 window.location.href = genreUrl;
             });
         });
-    </script>
+        </script>
 </body>
 </html>
