@@ -27,6 +27,8 @@ Check out the live demo of the application deployed on Render [here](https://tv-
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/chatapi.png)
 
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Full%20system.png)
+
 ## Getting Started
 
 ### Prerequisites
