@@ -10,6 +10,8 @@ This is a Flask web application that allows users to get recommendations for mov
 - **New Feature:** Integrated chatbot using **LLaMA 3** for interactive recommendations
 - **New Feature:** Automatically fetch **movie posters, names, and details** from TMDb based on chatbot recommendations
 - **New Feature:** Display fetched details alongside chatbot replies, with **clickable posters or movie names** leading to the TMDb page
+- **Complete UI Overhaul:** Redesigned the entire user interface using **Tailwind CSS** for a modern and responsive look
+- **New Pages:** Added dedicated pages for **movie details** and **TV show details** to enhance user experience
 
 ## Live Demo
 
@@ -97,7 +99,10 @@ Tv-Movie-Recommendations/
 │   ├── tv_genre.html
 │   ├── tv_recommend.html
 │   ├── chat.html  # New: Chat interface for movie recommendations
-└──
+│   ├── movie_detail.html  # New: Enhanced movie details display
+│   └── tv_detail.html  # New: Enhanced TV show details display
+└── static/
+    └── styles.css  # New: Custom styles for improved UI
 ```
 
 ## New Updates
@@ -107,15 +112,22 @@ Tv-Movie-Recommendations/
 - Integrated **Groq API with LLaMA 3** for a more interactive and intelligent movie recommendation system.
 - Users can now **chat with the bot** to get personalized recommendations.
 
-### 🔹 **Enhanced Movie Details Display**
+### 🔹 **Enhanced Movie and TV Show Details Display**
 
-- When the chatbot recommends a movie, it automatically fetches **movie posters, names, and details** from TMDb.
-- **Posters and movie names are clickable**, leading to the TMDb page for more information.
+- When the chatbot recommends a movie or TV show, it automatically fetches **posters, names, and details** from TMDb.
+- **Posters and names are clickable**, leading to the TMDb page for more information.
+- Improved layout for the hero section, ensuring all content fits properly without overlap.
+
+### 🔹 **Complete UI Overhaul**
+
+- Redesigned the entire user interface using **Tailwind CSS** for a modern and responsive look.
+- Enhanced user experience with a more intuitive layout and design.
 
 ### 🔹 **Improved User Experience**
 
-- Movie details now appear **alongside the chatbot’s responses** for a more seamless experience.
+- Movie and TV show details now appear **alongside the chatbot's responses** for a more seamless experience.
 - Optimized API calls to ensure faster loading times.
+- Added functionality to show full cast and reviews with toggle buttons for better content management.
 
 ## Contributing
 

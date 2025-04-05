@@ -222,14 +222,14 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section pt-20">
+    <section class="hero-section pt-36" style="min-height: 100vh;">
         <div class="hero-backdrop" style="background-image: url('{{ show.backdrop_path }}');"></div>
         <div class="hero-overlay"></div>
         <div class="container mx-auto px-4 h-full flex items-center">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                 <!-- Poster -->
                 <div class="flex justify-center md:justify-start">
-                    <img src="{{ show.poster_path }}" alt="{{ show.name }}" class="show-poster rounded-lg w-64 h-auto">
+                    <img src="{{ show.poster_path }}" alt="{{ show.name }}" class="show-poster rounded-lg w-96 h-auto">
                 </div>
                 
                 <!-- Show Info -->
@@ -295,7 +295,7 @@
     </section>
 
     <!-- Seasons Section -->
-    <section class="py-16 bg-gray-900">
+    <section class="py-16 bg-gray-900 mt-10">
         <div class="container mx-auto px-4">
             <h2 class="text-3xl font-bold mb-8 gradient-text">Seasons</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
