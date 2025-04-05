@@ -19,13 +19,13 @@ Check out the live demo of the application deployed on Render [here](https://tv-
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%201.png)
 
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Recommendations%202.png)
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%202.png)
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommender-System%201.png)
 
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommendations%202.png)
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Details%20page.png)
 
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/FlickFinder%201.png)
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Cinebot.png)
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/chatapi.png)
 
