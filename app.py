@@ -329,7 +329,7 @@ def chat_api():
                 "title": media_info["title"] if media_type == "movie" else media_info["name"],
                 "year": media_info.get("release_date", "Unknown")[:4] if media_type == "movie" else media_info.get("first_air_date", "Unknown")[:4],
                 "poster_url": f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image",
-                "tmdb_link": f"https://www.themoviedb.org/{media_type}/{media_id}"
+                "tmdb_link": f"/{media_type}/{media_id}"
             })
 
     # **🔵 Prepare JSON Response**
@@ -340,6 +340,199 @@ def chat_api():
         response_data["tv_shows"] = media_data["tv_shows"]
 
     return jsonify(response_data)
+
+def fetch_movie_details(movie_id):
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=en-US&append_to_response=credits,videos,recommendations,reviews"
+    response = requests.get(url)
+    data = response.json()
+    
+    # Extract basic movie information
+    movie = {
+        'id': data.get('id'),
+        'title': data.get('title'),
+        'overview': data.get('overview'),
+        'tagline': data.get('tagline'),
+        'release_date': data.get('release_date'),
+        'runtime': format_runtime(data.get('runtime')),
+        'vote_average': round(data.get('vote_average', 0), 1),
+        'vote_count': data.get('vote_count', 0),
+        'status': data.get('status'),
+        'original_language': data.get('original_language'),
+        'budget': format_currency(data.get('budget')),
+        'revenue': format_currency(data.get('revenue')),
+        'poster_path': f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get('poster_path') else None,
+        'backdrop_path': f"https://image.tmdb.org/t/p/original{data.get('backdrop_path')}" if data.get('backdrop_path') else None,
+        'genres': [genre['name'] for genre in data.get('genres', [])],
+        'trailer_url': None
+    }
+    
+    # Extract director and writer
+    credits = data.get('credits', {})
+    crew = credits.get('crew', [])
+    
+    for person in crew:
+        if person.get('job') == 'Director':
+            movie['director'] = person.get('name')
+        elif person.get('job') == 'Screenplay' or person.get('job') == 'Writer':
+            movie['writer'] = person.get('name')
+    
+    # Extract cast
+    movie['cast'] = []
+    for cast_member in credits.get('cast', [])[:12]:
+        movie['cast'].append({
+            'id': cast_member.get('id'),
+            'name': cast_member.get('name'),
+            'character': cast_member.get('character'),
+            'profile_path': f"https://image.tmdb.org/t/p/w185{cast_member.get('profile_path')}" if cast_member.get('profile_path') else None
+        })
+    
+    # Extract trailer
+    videos = data.get('videos', {}).get('results', [])
+    for video in videos:
+        if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
+            movie['trailer_url'] = f"https://www.youtube.com/embed/{video.get('key')}"
+            break
+    
+    # Extract recommendations
+    movie['recommendations'] = []
+    for rec in data.get('recommendations', {}).get('results', [])[:12]:
+        movie['recommendations'].append({
+            'id': rec.get('id'),
+            'title': rec.get('title'),
+            'release_date': rec.get('release_date'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{rec.get('poster_path')}" if rec.get('poster_path') else None
+        })
+    
+    # Extract reviews
+    movie['reviews'] = []
+    for review in data.get('reviews', {}).get('results', [])[:4]:
+        movie['reviews'].append({
+            'author': review.get('author'),
+            'content': review.get('content'),
+            'created_at': review.get('created_at'),
+            'rating': round(review.get('author_details', {}).get('rating', 0) / 2),  # Convert 10-point scale to 5-point
+            'author_avatar': f"https://www.gravatar.com/avatar/{hash(review.get('author', '').lower())}?s=100&d=identicon"
+        })
+    
+    return movie
+
+def fetch_tv_show_details(show_id):
+    url = f"https://api.themoviedb.org/3/tv/{show_id}?api_key={TMDB_API_KEY}&language=en-US&append_to_response=credits,videos,recommendations,reviews,seasons"
+    response = requests.get(url)
+    data = response.json()
+    
+    # Extract basic show information
+    show = {
+        'id': data.get('id'),
+        'name': data.get('name'),
+        'overview': data.get('overview'),
+        'tagline': data.get('tagline'),
+        'first_air_date': data.get('first_air_date'),
+        'last_air_date': data.get('last_air_date'),
+        'number_of_seasons': data.get('number_of_seasons'),
+        'number_of_episodes': data.get('number_of_episodes'),
+        'vote_average': round(data.get('vote_average', 0), 1),
+        'vote_count': data.get('vote_count', 0),
+        'status': data.get('status'),
+        'original_language': data.get('original_language'),
+        'poster_path': f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get('poster_path') else None,
+        'backdrop_path': f"https://image.tmdb.org/t/p/original{data.get('backdrop_path')}" if data.get('backdrop_path') else None,
+        'genres': [genre['name'] for genre in data.get('genres', [])],
+        'trailer_url': None
+    }
+    
+    # Extract creator
+    credits = data.get('credits', {})
+    crew = credits.get('crew', [])
+    
+    for person in crew:
+        if person.get('job') == 'Creator':
+            show['creator'] = person.get('name')
+            break
+    
+    # Extract cast
+    show['cast'] = []
+    for cast_member in credits.get('cast', [])[:12]:
+        show['cast'].append({
+            'id': cast_member.get('id'),
+            'name': cast_member.get('name'),
+            'character': cast_member.get('character'),
+            'profile_path': f"https://image.tmdb.org/t/p/w185{cast_member.get('profile_path')}" if cast_member.get('profile_path') else None
+        })
+    
+    # Extract seasons
+    show['seasons'] = []
+    for season in data.get('seasons', []):
+        show['seasons'].append({
+            'id': season.get('id'),
+            'name': season.get('name'),
+            'overview': season.get('overview'),
+            'air_date': season.get('air_date'),
+            'episode_count': season.get('episode_count'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{season.get('poster_path')}" if season.get('poster_path') else None
+        })
+    
+    # Extract trailer
+    videos = data.get('videos', {}).get('results', [])
+    for video in videos:
+        if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
+            show['trailer_url'] = f"https://www.youtube.com/embed/{video.get('key')}"
+            break
+    
+    # Extract recommendations
+    show['recommendations'] = []
+    for rec in data.get('recommendations', {}).get('results', [])[:12]:
+        show['recommendations'].append({
+            'id': rec.get('id'),
+            'name': rec.get('name'),
+            'first_air_date': rec.get('first_air_date'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{rec.get('poster_path')}" if rec.get('poster_path') else None
+        })
+    
+    # Extract reviews
+    show['reviews'] = []
+    for review in data.get('reviews', {}).get('results', [])[:4]:
+        show['reviews'].append({
+            'author': review.get('author'),
+            'content': review.get('content'),
+            'created_at': review.get('created_at'),
+            'rating': round(review.get('author_details', {}).get('rating', 0) / 2),  # Convert 10-point scale to 5-point
+            'author_avatar': f"https://www.gravatar.com/avatar/{hash(review.get('author', '').lower())}?s=100&d=identicon"
+        })
+    
+    return show
+
+def format_runtime(minutes):
+    if not minutes:
+        return "N/A"
+    hours = minutes // 60
+    remaining_minutes = minutes % 60
+    if hours > 0:
+        return f"{hours}h {remaining_minutes}m"
+    return f"{remaining_minutes}m"
+
+def format_currency(amount):
+    if not amount:
+        return "N/A"
+    return f"{amount:,}"
+
+@app.route('/movie/<int:movie_id>')
+def movie_detail(movie_id):
+    try:
+        movie = fetch_movie_details(movie_id)
+        return render_template('movie_detail.html', movie=movie)
+    except Exception as e:
+        print(f"Error fetching movie details: {e}")
+        return render_template('error.html', message="Could not fetch movie details. Please try again later.")
+
+@app.route('/tv/<int:show_id>')
+def tv_detail(show_id):
+    try:
+        show = fetch_tv_show_details(show_id)
+        return render_template('tv_detail.html', show=show)
+    except Exception as e:
+        print(f"Error fetching TV show details: {e}")
+        return render_template('error.html', message="Could not fetch TV show details. Please try again later.")
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

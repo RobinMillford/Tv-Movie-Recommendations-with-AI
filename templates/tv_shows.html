@@ -5,453 +5,541 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon2.ico') }}">
     <title>TV Show Recommender System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-    html, body {
-        height: 100%;
-        overflow: auto;
-    }
-    
-    body {
-        background-image: url("https://e0.pxfuel.com/wallpapers/475/972/desktop-wallpaper-get-the-latest-movies-data-src-kodi-tv-shows-teahub-io.jpg");
-        background-size: cover;
-        backdrop-filter: blur(3px);
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        color: #ffffff;
-    }
-    
-    h1 {
-        text-align: center;
-        margin-bottom: 10px;
-        margin-top: 20px;
-        font-size: 60px;
-        font-family: Algerian, sans-serif;
-        text-shadow: 4px 4px 4px #000000;
-        color: #ffffff;
-    }
-    
-    form {
-        text-align: center;
-        margin-top: 10px;
-        position: relative;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 10px;
-        color: #ffffff;
-        font-size: 30px;
-        font-family: Cooper Black, sans-serif;
-        font-weight: 100;
-    }
-    
-    input[type="text"], input[type="submit"] {
-        padding: 15px;
-        border: none;
-        border-radius: 5px;
-        background-color: #2c2424cb;
-        color: #ffffff;
-        font-size: 16px;
-        width: 800px;
-        margin-right: 10px;
-        margin-bottom: 50px;
-    }
-    
-    input[type="submit"] {
-        cursor: pointer;
-        transition: background-color 0.3s;
-        width: 300px;
-    }
-    
-    input[type="submit"]:hover {
-        background-color: #086ed3; /* Darker blue color on hover */
-    }
-    
-    .autocomplete-items {
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+            background: linear-gradient(-45deg, #0f172a, #1e40af, #3b82f6, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tv-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tv-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 10;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-icon {
         position: absolute;
-        border: 1px solid #d4d4d4;
-        border-radius: 5px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 99;
-        background-color: #2c2424cb; /* Dark blue background for autocomplete items */
-        width: 300px;
-        padding: 10px;
-        margin-top: 5px;
-        display: none;
-    }
-    
-    .autocomplete-items div {
-        display: flex;
-        align-items: center;
-        padding: 5px;
-        cursor: pointer;
-        color: #ffffff;
-    }
-    
-    .autocomplete-items img {
-        width: 50px;
-        height: 75px;
-        margin-right: 10px;
-        border-radius: 5px;
-    }
-    
-    .autocomplete-items div:hover {
-        background-color: #0077cc; /* Darker blue color on hover */
-    }
-    
-    .category-container {
-        width: 100%;
-        max-width: 1200px;
-        margin: 20px 0;
-        text-align: center;
-    }
-    
-    .category-title {
-        font-size: 30px;
-        font-family: Cooper Black, sans-serif;
-        text-align: center;
-        margin-bottom: 20px;
-        color: #ffffff; /* Blue color for category titles */
-    }
-    
-    .top-categories, .other-categories {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
     }
     
     .category-button {
-        padding: 10px 20px;
-        border-radius: 25px;
-        background-color: #0077cc; /* Blue color for category buttons */
-        margin: 5px;
-        color: #ffffff;
-        text-decoration: none;
-        font-size: 16px;
-        transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .category-button:hover {
-        background-color: #00558d; /* Darker blue color on hover */
-    }
-    
-    .movie-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .movie-card {
-        background-color: rgba(51, 51, 51, 0.7);
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px;
-        width: 150px;
-        text-align: center;
-    }
-    
-    .movie-card h3 {
-        font-size: 14px;
-        margin-top: 10px;
-    }
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
 
-    .header {
-    padding: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: rgba(51, 51, 51, 0.0); /* Added background color */
+        .trending-slider {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
 
-}
-
-.nav-link {
-    color: white;
-    font-size: 20px;
-    font-weight: 400;
-    display: flex;
-    gap: 15px;
-    cursor: pointer;
-    margin-left: auto;
+        .trending-slider::-webkit-scrollbar {
+            display: none;
 }
 
 .nav-link a {
-    text-decoration: none;
-    color: white;
-    transition: color 0.3s;
-}
-
-.nav-link a:hover {
-    color: #0077cc;
-}
-
-/* Off-Screen Menu */
-.off-screen-menu {
-    background-color: rgba(0, 0, 0, 0.9);
-    height: 100%;
-    width: 0px; /* Initially hidden */
-    position: fixed;
-    top: 0;
-    right: 0;
-    overflow-x: hidden;
-    transition: width 0.5s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.off-screen-menu.active {
-    width: 250px;
-}
-
-.off-screen-menu ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.off-screen-menu li {
-    margin-bottom: 20px;
-}
-
-.off-screen-menu a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 1.5rem;
-    transition: color 0.3s;
-}
-
-.off-screen-menu a:hover {
-    color: #0077cc;
-}
-
-/* Hamburger Menu */
-.ham-menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 1000;
-    position: absolute;
-    left: 20px; /* Position it properly */
-}
-
-.ham-menu span {
-    height: 3px;
-    width: 30px;
-    background-color: #ffffff;
-    margin: 5px 0;
-    transition: transform 0.3s, opacity 0.3s;
-}
-
-.ham-menu.active span:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-}
-
-.ham-menu.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.ham-menu.active span:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
-}
-
-#trending-tv {
-            width: 80%;
-            max-width: 1200px;
-            /* margin-top: 10px; */
-            text-align: center;
+            position: relative;
         }
 
-.trending-tv-container {
+        .nav-link a::after {
+            content: '';
+    position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link a:hover::after {
     width: 100%;
-    max-width: 1400px;
-    margin: 20px auto;
-    text-align: center;
+        }
+
+        #chatbot-button {
+            transition: all 0.3s ease;
+        }
+
+        #chatbot-button:hover {
+            transform: scale(1.1);
+        }
+
+        .trailer-card {
+            transition: all 0.3s ease;
+        }
+
+        .trailer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        #autocomplete-items {
+            z-index: 50;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
 }
 
-.trending-title {
-    font-size: 28px;
-    font-family: "Cooper Black", sans-serif;
-    color: white;
-    margin-bottom: 10px;
-}
-
-.trending-tv-slider {
+/* Add these new styles */
+.slide {
+    min-width: 100%;
     display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 15px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    scrollbar-width: none; /* Hide scrollbar */
+    gap: 2rem;
+    padding: 1rem;
 }
 
-.trending-tv-slider::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome, Safari */
-}
-
-.tv-card {
-    flex: 0 0 auto;
-    width: 200px;
-    text-align: center;
-    background-color: rgba(51, 51, 51, 0.8);
-    padding: 10px;
-    border-radius: 5px;
-    transition: transform 0.3s;
-}
-
-.tv-card:hover {
-    transform: scale(1.05);
-}
-
-.tv-card img {
-    width: 100%;
-    border-radius: 5px;
-}
-
-.tv-card h3 {
-    font-size: 14px;
-    margin-top: 10px;
-    color: white;
-}
-
-.recent-tv-container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 30px auto;
-    text-align: center;
-}
-
-.recent-tv-title {
-    font-size: 28px;
-    font-family: "Cooper Black", sans-serif;
-    color: white;
-    margin-bottom: 30px;
-}
-
-.recent-tv-slider {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 20px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-    scrollbar-width: none;
-}
-
-.recent-tv-slider::-webkit-scrollbar {
-    display: none;
-}
-
-.tv-card1 {
-    flex: 0 0 auto;
-    width: 300px;
-    text-align: center;
-    background-color: rgba(51, 51, 51, 0.8);
-    padding: 10px;
-    border-radius: 8px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-}
-
-.tv-card1:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-}
-
-.tv-card1 img {
-    width: 100%;
-    height: 250px;
-    border-radius: 8px;
-    transition: opacity 0.3s ease-in-out;
-    border: none;
-}
-
-.tv-card1:hover img {
-    opacity: 0.85;
-}
-
-.tv-card1 h3 {
-    font-size: 16px;
-    margin-top: 12px;
-    color: white;
-    text-overflow: ellipsis;
+.show-card {
+    flex: 1;
+    position: relative;
     overflow: hidden;
-    white-space: nowrap;
-    width: 100%;
+    border-radius: 1rem;
+    transition: transform 0.3s ease;
 }
 
-.tv-card1 iframe {
+.show-card:hover {
+    transform: translateY(-10px);
+}
+
+.show-card img {
     width: 100%;
-    height: 180px;
-    border-radius: 8px;
-    border: none;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 1rem;
+}
+
+.show-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: white;
+}
+
+.show-rating {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0,0,0,0.8);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.indicator {
+    width: 2rem;
+    height: 0.5rem;
+    background: rgba(255,255,255,0.3);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: white;
+    width: 3rem;
 }
 </style>
 </head>
-<body>
-    <div>
-        <div class="header">
-            <div class="nav-link">
-                <a href="/">Home</a>
-                <!-- <a href="/tv_shows">TV Shows & Anime</a> -->
-                <a href="/chat">Chat with AI</a>
+<body class="min-h-screen bg-gray-900 text-white font-['Poppins']">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold gradient-text">TVHub</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link hover:text-blue-400 transition-colors">Home</a>
+                    <a href="/chat" class="nav-link hover:text-blue-400 transition-colors">AI Chat</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 animate-gradient">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 animate__animated animate__fadeInDown gradient-text">
+                Discover Your Next Favorite TV Show
+            </h1>
+            <p class="text-xl mb-12 animate__animated animate__fadeInUp text-blue-200">
+                Get personalized TV show recommendations powered by AI
+            </p>
+            
+            <!-- Search Bar -->
+            <div class="search-container animate__animated animate__fadeInUp">
+                <form action="/tv_recommend" method="post" class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-grow">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="show_name" id="show_name" 
+                               class="search-input" placeholder="Search for TV shows...">
+                        <div id="autocomplete-items" class="absolute w-full mt-2 glass-effect rounded-lg hidden"></div>
+                    </div>
+                    <button type="submit" 
+                            class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105">
+                        Find Shows
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Best TV Shows Slideshow Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">All-Time Best TV Shows</h2>
+            <div class="relative">
+                <!-- Navigation Buttons -->
+                <button id="prevSlide" class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-gray-900/50 hover:bg-gray-900/80 text-white p-2 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <button id="nextSlide" class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-gray-900/50 hover:bg-gray-900/80 text-white p-2 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+
+                <!-- Slideshow Container -->
+                <div class="overflow-hidden">
+                    <div id="bestShowsSlideshow" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- Slides will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Slide Indicators -->
+                <div id="slideIndicators" class="flex justify-center mt-4 space-x-2">
+                    <!-- Indicators will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Trending Now</h2>
+            <div class="trending-slider flex overflow-x-auto gap-6 pb-8" id="trending-slider">
+                <!-- Loading skeleton -->
+                <div class="tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
             </div>      
         </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">Browse by Category</h2>
+            
+            <!-- Top Categories -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 text-center text-blue-200">Popular Categories</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Action Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Action & Adventure</h4>
+                            <a href="/tv_genre/action_adventure" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="action-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comedy Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Comedy</h4>
+                            <a href="/tv_genre/comedy" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="comedy-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Drama Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Drama</h4>
+                            <a href="/tv_genre/drama" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="drama-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Family Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Family</h4>
+                            <a href="/tv_genre/family" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="family-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kids Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Kids</h4>
+                            <a href="/tv_genre/kids" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="kids-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Animation Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Animation & Anime</h4>
+                            <a href="/tv_genre/animation" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="animation-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Categories -->
+            <div>
+                <h3 class="text-xl font-semibold mb-6 text-center text-blue-200">More Categories</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Crime Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Crime</h4>
+                            <a href="/tv_genre/crime" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="crime-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Documentary Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Documentary</h4>
+                            <a href="/tv_genre/documentary" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="documentary-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mystery Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Mystery</h4>
+                            <a href="/tv_genre/mystery" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="mystery-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+        </div>
     </div>
 
-    <div class="off-screen-menu">
-        <ul>
-            <li><a href="/">Home</a></li>
-            <!-- <li><a href="/tv_shows">TV Shows & Anime</a></li> -->
-            <li><a href="/chat">Chat with AI</a></li>
-        </ul>
+                    <!-- Sci-Fi Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Sci-Fi & Fantasy</h4>
+                            <a href="/tv_genre/sci_fi_fantasy" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="scifi-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
     </div>
 
-    <div class="ham-menu" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+                    <!-- War Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">War & Politics</h4>
+                            <a href="/tv_genre/war_politics" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="war-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
     </div>
 
-    <h1>TV Show & Anime Recommender System</h1>
-    <div class="trending-tv-container">
-            <h2 class="trending-title">Trending TV Shows</h2>
-            <div class="trending-tv-slider" id="trending-tv-slider">
-                <!-- TV show cards will be inserted here dynamically -->
+                    <!-- Western Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Western</h4>
+                            <a href="/tv_genre/western" class="text-blue-400 hover:text-blue-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="western-tv">
+                            <!-- Loading skeleton -->
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
+
+    <!-- Chat Button -->
+    <button id="chatbot-button" 
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600"
+            onclick="openChat()">
+        💬
+    </button>
         
         <script>
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const API_KEY = '{{ api_key }}';
+
             document.addEventListener("DOMContentLoaded", function() {
                 fetchTrendingTVShows();
-            });
+            fetchBestTVShows();
+            setupMobileMenu();
+            fetchTVShowsByGenres();
+        });
+
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-gray-900 glass-effect hidden';
+            mobileMenu.innerHTML = `
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex flex-col space-y-4">
+                        <a href="/" class="text-white hover:text-blue-400">Home</a>
+                        <a href="/tv_shows" class="text-white hover:text-blue-400">TV Shows</a>
+                        <a href="/chat" class="text-white hover:text-blue-400">AI Chat</a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
         
             function fetchTrendingTVShows() {
-                fetch("https://api.themoviedb.org/3/trending/tv/week?api_key={{ api_key }}")
+            fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}`)
                 .then(response => response.json())
                 .then(data => {
-                    const slider = document.getElementById("trending-tv-slider");
+                const slider = document.getElementById("trending-slider");
+                slider.innerHTML = ''; // Clear loading skeletons
                     data.results.forEach(show => {
-                        let posterUrl = show.poster_path 
-                            ? `https://image.tmdb.org/t/p/w200${show.poster_path}` 
-                            : "https://via.placeholder.com/150x225?text=No+Image";
-                        let showCard = document.createElement("div");
-                        showCard.classList.add("tv-card"); // Using the correct class
+                    const posterUrl = show.poster_path 
+                        ? `https://image.tmdb.org/t/p/w500${show.poster_path}` 
+                        : "https://via.placeholder.com/500x750?text=No+Image";
+                    
+                    const showCard = document.createElement("div");
+                    showCard.className = "tv-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden";
                         showCard.innerHTML = `
-                            <a href="https://www.themoviedb.org/tv/${show.id}" target="_blank">
-                                <img src="${posterUrl}" alt="${show.name}">
-                                <h3>${show.name}</h3>
+                        <a href="/tv/${show.id}" class="block">
+                            <img src="${posterUrl}" alt="${show.name}" class="w-full h-72 object-cover">
+                            <div class="p-4">
+                                <h3 class="font-semibold text-sm">${show.name}</h3>
+                                <p class="text-gray-400 text-xs">${show.first_air_date}</p>
+                            </div>
                             </a>
                         `;
                         slider.appendChild(showCard);
@@ -459,209 +547,152 @@
                 })
                 .catch(error => console.error("Error fetching trending TV shows:", error));
             }
-        </script>               
-    <form autocomplete="off" action="/tv_recommend" method="post">
-        <label for="show_name">Search for a Show:</label>
-        <input type="text" id="show_name" name="show_name" placeholder="Search for a TV Show...">
-        <input type="submit" value="Show Recommendations">
-        <div class="autocomplete-items" id="autocomplete-items"></div>
-    </form>
-    <div class="recent-tv-container">
-        <h2 class="recent-tv-title">Latest & Upcoming TV Shows</h2>
-        <div class="recent-tv-slider" id="recent-tv-slider">
-            <!-- TV show trailers will be inserted here dynamically -->
-        </div>
-    </div>
-    
-    <script>
-    const API_KEY = "{{ api_key }}";
-    const BASE_URL = 'https://api.themoviedb.org/3';
-    
-    // Fetch trending, popular, and upcoming TV shows
-async function fetchRecentTVShows() {
-    const trendingTVUrl = `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&language=en-US`;
-    const popularTVUrl = `${BASE_URL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`;
-    const discoverTVUrl = `${BASE_URL}/discover/tv?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&page=1&with_original_language=en`;
 
-    try {
-        const [trendingResponse, popularResponse, discoverResponse] = await Promise.all([
-            fetch(trendingTVUrl),
-            fetch(popularTVUrl),
-            fetch(discoverTVUrl)
-        ]);
-
-        const trendingData = await trendingResponse.json();
-        const popularData = await popularResponse.json();
-        const discoverData = await discoverResponse.json();
-
-        let tvShows = [...trendingData.results, ...popularData.results, ...discoverData.results];
-
-        // Remove duplicate TV shows (based on unique ID)
-        const uniqueTVShows = [];
-        const tvIds = new Set();
-
-        tvShows.forEach(show => {
-            if (!tvIds.has(show.id)) {
-                tvIds.add(show.id);
-                uniqueTVShows.push(show);
-            }
-        });
-
-        // Remove reality TV & news genres
-        const filteredTVShows = uniqueTVShows.filter(show => !["Reality", "News", "Talk"].includes(show.genre_ids));
-
-        // Fetch trailers only for unique TV shows
-        const trailerPromises = filteredTVShows.map(show => fetchTVTrailer(show.id));
-        const trailers = await Promise.all(trailerPromises);
-
-        // Keep only shows with unique trailers
-        const finalTVShows = [];
-        const finalTrailers = [];
-        const usedTrailers = new Set();
-
-        filteredTVShows.forEach((show, index) => {
-            const trailerUrl = trailers[index];
-            if (trailerUrl && !usedTrailers.has(trailerUrl)) {
-                usedTrailers.add(trailerUrl);
-                finalTVShows.push(show);
-                finalTrailers.push(trailerUrl);
-            }
-        });
-
-        // Display TV shows with trailers
-        displayRecentTVShows(finalTVShows, finalTrailers);
-
+        // Add new function to fetch collection images
+        async function fetchBestTVShows() {
+            try {
+                // Fetch top-rated TV shows
+                const response = await fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    const slideshow = document.getElementById('bestShowsSlideshow');
+                    const indicators = document.getElementById('slideIndicators');
+                    
+                    // Clear existing content
+                    slideshow.innerHTML = '';
+                    indicators.innerHTML = '';
+                    
+                    // Group shows into slides (3 shows per slide)
+                    const showsPerSlide = 3;
+                    const totalSlides = Math.ceil(data.results.length / showsPerSlide);
+                    
+                    for (let i = 0; i < totalSlides; i++) {
+                        const slide = document.createElement('div');
+                        slide.className = 'slide';
+                        
+                        // Add shows to this slide
+                        const slideShows = data.results.slice(i * showsPerSlide, (i + 1) * showsPerSlide);
+                        slideShows.forEach(show => {
+                            const posterUrl = show.poster_path 
+                                ? `https://image.tmdb.org/t/p/w500${show.poster_path}` 
+                                : "https://via.placeholder.com/500x750?text=No+Image";
+                            
+                            const showCard = document.createElement('div');
+                            showCard.className = 'show-card glass-effect';
+                            showCard.innerHTML = `
+                                <div class="relative">
+                                    <a href="/tv/${show.id}">
+                                        <img src="${posterUrl}" alt="${show.name}" class="w-full">
+                                        <div class="show-rating">
+                                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                            <span>${show.vote_average.toFixed(1)}</span>
+                                        </div>
+                                        <div class="show-info">
+                                            <h3 class="text-xl font-bold mb-2">${show.name}</h3>
+                                            <p class="text-sm text-gray-300">${show.first_air_date}</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            `;
+                            slide.appendChild(showCard);
+                        });
+                        
+                        slideshow.appendChild(slide);
+                        
+                        // Add indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = `indicator ${i === 0 ? 'active' : ''}`;
+                        indicator.addEventListener('click', () => goToSlide(i));
+                        indicators.appendChild(indicator);
+                    }
+                    
+                    // Initialize slideshow controls
+                    initializeSlideshow(totalSlides);
+                }
     } catch (error) {
-        console.error("Error fetching TV shows:", error);
-    }
-}
-
-// Fetch TV show trailers
-async function fetchTVTrailer(tvId) {
-    const url = `${BASE_URL}/tv/${tvId}/videos?api_key=${API_KEY}&language=en-US`;
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        let trailer = data.results.find(video => video.type === 'Trailer' && video.site === "YouTube" && video.official);
-        if (!trailer) {
-            trailer = data.results.find(video => video.type === 'Teaser' && video.site === "YouTube");
-        }
-        if (!trailer) {
-            trailer = data.results.find(video => video.site === "YouTube");
+                console.error("Error fetching best TV shows:", error);
+            }
         }
 
-        return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
-    } catch (error) {
-        console.error(`Error fetching trailer for TV show ID ${tvId}:`, error);
-        return null;
-    }
-}
-
-// Display TV shows and their trailers
-function displayRecentTVShows(tvShows, trailers) {
-    const slider = document.getElementById('recent-tv-slider');
-    slider.innerHTML = '';
-
-    tvShows.forEach((show, index) => {
-        const tvCard = document.createElement('div');
-        tvCard.classList.add('tv-card1');
-
-        if (trailers[index]) {
-            const iframe = document.createElement('iframe');
-            iframe.src = trailers[index];
-            iframe.allowFullscreen = true;
-            tvCard.appendChild(iframe);
-        } else {
-            const poster = document.createElement('img');
-            poster.src = `https://image.tmdb.org/t/p/w500${show.poster_path}`;
-            poster.alt = show.name;
-            poster.classList.add('tv-poster');
-            tvCard.appendChild(poster);
+        function initializeSlideshow(totalSlides) {
+            let currentSlide = 0;
+            const slideshow = document.getElementById('bestShowsSlideshow');
+            const indicators = document.querySelectorAll('.indicator');
+            
+            function updateSlide() {
+                slideshow.style.transform = `translateX(-${currentSlide * 100}%)`;
+                indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === currentSlide);
+                });
+            }
+            
+            function goToSlide(index) {
+                currentSlide = index;
+                updateSlide();
+            }
+            
+            document.getElementById('prevSlide').addEventListener('click', () => {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updateSlide();
+            });
+            
+            document.getElementById('nextSlide').addEventListener('click', () => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlide();
+            });
+            
+            // Auto-advance slides every 5 seconds
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlide();
+            }, 5000);
         }
 
-        const tvTitle = document.createElement('h3');
-        tvTitle.textContent = show.name;
-        tvTitle.classList.add('tv-title');
-        tvTitle.onclick = () => window.open(`https://www.themoviedb.org/tv/${show.id}`, '_blank');
-        tvCard.appendChild(tvTitle);
-
-        slider.appendChild(tvCard);
-    });
-}
-
-    // Load TV shows on page load
-    fetchRecentTVShows();
-    </script>    
-    <!-- Categories -->
-    <div class="category-container">
-        <h2 class="category-title">Top Categories</h2>
-        <div class="top-categories">
-            <a href="/tv_genre/action_adventure" class="category-button">Action & Adventure</a>
-            <a href="/tv_genre/comedy" class="category-button">Comedy</a>
-            <a href="/tv_genre/drama" class="category-button">Drama</a>
-            <a href="/tv_genre/family" class="category-button">Family</a>
-            <a href="/tv_genre/kids" class="category-button">Kids</a>
-        </div>
-    </div>
-
-    <div class="category-container">
-        <h2 class="category-title">Other Categories</h2>
-        <div class="other-categories">
-            <a href="/tv_genre/animation" class="category-button">Animation & Anime</a>
-            <a href="/tv_genre/crime" class="category-button">Crime</a>
-            <a href="/tv_genre/documentary" class="category-button">Documentary</a>
-            <a href="/tv_genre/mystery" class="category-button">Mystery</a>
-            <a href="/tv_genre/news" class="category-button">News</a>
-            <a href="/tv_genre/reality" class="category-button">Reality</a>
-            <a href="/tv_genre/sci_fi_fantasy" class="category-button">Sci-Fi & Fantasy</a>
-            <a href="/tv_genre/soap" class="category-button">Soap</a>
-            <a href="/tv_genre/talk" class="category-button">Talk</a>
-            <a href="/tv_genre/war_politics" class="category-button">War & Politics</a>
-            <a href="/tv_genre/western" class="category-button">Western</a>
-        </div>
-    </div>    
-
-    <script>
-                document.addEventListener("DOMContentLoaded", () => {
-    const hamMenu = document.querySelector(".ham-menu");
-    const offScreenMenu = document.querySelector(".off-screen-menu");
-
-    if (hamMenu && offScreenMenu) {
-        hamMenu.addEventListener("click", () => {
-            const isActive = offScreenMenu.classList.toggle("active");
-            hamMenu.classList.toggle("active", isActive);
-
-            // Accessibility improvements
-            offScreenMenu.setAttribute("aria-expanded", isActive);
-            hamMenu.setAttribute("aria-label", isActive ? "Close menu" : "Open menu");
-        });
-    }
-});
-
+        // Search functionality with modern styling
         document.getElementById("show_name").addEventListener("input", function() {
-            var input = this.value.toLowerCase();
-            var autocompleteContainer = document.getElementById("autocomplete-items");
+            const input = this.value.toLowerCase();
+            const autocompleteContainer = document.getElementById("autocomplete-items");
             autocompleteContainer.innerHTML = "";
 
-            fetch(`https://api.themoviedb.org/3/search/tv?api_key={{ api_key }}&language=en-US&query=${input}&page=1&include_adult=true`)
+            if (input.length < 2) {
+                autocompleteContainer.style.display = "none";
+                return;
+            }
+
+            fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&language=en-US&query=${input}&page=1&include_adult=true`)
             .then(response => response.json())
             .then(data => {
                 data.results.forEach(show => {
-                    var suggestion = document.createElement("div");
-                    var posterUrl = show.poster_path ? `https://image.tmdb.org/t/p/w92/${show.poster_path}` : "https://via.placeholder.com/50x75?text=No+Image";
-                    suggestion.innerHTML = `<img src="${posterUrl}" alt="Poster"><span>${show.name} (${show.first_air_date})</span>`;
+                    const suggestion = document.createElement("div");
+                    const posterUrl = show.poster_path 
+                        ? `https://image.tmdb.org/t/p/w92/${show.poster_path}` 
+                        : "https://via.placeholder.com/92x138?text=No+Image";
+                    
+                    suggestion.className = "autocomplete-item flex items-center p-2 glass-effect";
+                    suggestion.innerHTML = `
+                        <img src="${posterUrl}" alt="Poster" class="w-12 h-18 object-cover rounded mr-3">
+                        <div>
+                            <div class="font-medium">${show.name}</div>
+                            <div class="text-sm text-gray-400">${show.first_air_date}</div>
+                        </div>
+                    `;
+                    
                     suggestion.addEventListener("click", function() {
                         document.getElementById("show_name").value = show.name;
-                        autocompleteContainer.innerHTML = "";
+                        autocompleteContainer.style.display = "none";
+                        // Redirect to the TV show detail page
+                        window.location.href = `/tv/${show.id}`;
                     });
+                    
                     autocompleteContainer.appendChild(suggestion);
                 });
 
                 autocompleteContainer.style.display = autocompleteContainer.children.length > 0 ? "block" : "none";
             })
-            .catch(error => console.error("Error fetching shows:", error));
+            .catch(error => console.error("Error fetching TV shows:", error));
         });
 
         document.addEventListener("click", function(e) {
@@ -670,13 +701,83 @@ function displayRecentTVShows(tvShows, trailers) {
             }
         });
 
-        document.querySelectorAll('.category-button').forEach(item => {
-            item.addEventListener('click', event => {
-                event.preventDefault();
-                const genreUrl = event.target.getAttribute('href');
-                window.location.href = genreUrl;
-            });
-        });
+        function openChat() {
+            window.location.href = "/chat";
+        }
+
+        // Add this new function to fetch TV shows by genres
+        async function fetchTVShowsByGenres() {
+            const genres = {
+                'action': 10759,
+                'comedy': 35,
+                'drama': 18,
+                'family': 10751,
+                'kids': 10762,
+                'animation': 16,
+                'crime': 80,
+                'documentary': 99,
+                'mystery': 9648,
+                'scifi': 10765,  // Updated to the correct ID for Sci-Fi & Fantasy
+                'war': 10768,
+                'western': 37
+            };
+
+            for (const [genre, id] of Object.entries(genres)) {
+                try {
+                    let url = `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${id}&sort_by=popularity.desc&page=1`;
+                    
+                    // Log the URL for debugging
+                    if (genre === 'scifi') {
+                        console.log("Sci-Fi & Fantasy URL:", url);
+                    }
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    // Log the response for debugging
+                    if (genre === 'scifi') {
+                        console.log("Sci-Fi & Fantasy response:", data);
+                    }
+                    
+                    const container = document.getElementById(`${genre}-tv`);
+                    if (container) {
+                        container.innerHTML = ''; // Clear loading skeletons
+                        
+                        if (data.results && data.results.length > 0) {
+                            data.results.slice(0, 5).forEach(show => {
+                                const posterUrl = show.poster_path 
+                                    ? `https://image.tmdb.org/t/p/w500${show.poster_path}` 
+                                    : "https://via.placeholder.com/500x750?text=No+Image";
+                                
+                                const showCard = document.createElement("div");
+                                showCard.className = "tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden";
+                                showCard.innerHTML = `
+                                    <a href="/tv/${show.id}" class="block">
+                                        <img src="${posterUrl}" alt="${show.name}" class="w-full h-48 object-cover">
+                                        <div class="p-2">
+                                            <h3 class="font-semibold text-xs truncate">${show.name}</h3>
+                                            <p class="text-gray-400 text-xs">${show.first_air_date}</p>
+                                        </div>
+                                    </a>
+                                `;
+                                container.appendChild(showCard);
+                            });
+                        } else {
+                            // If no results, show a message
+                            container.innerHTML = '<p class="text-gray-400 text-center">No shows found</p>';
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error fetching ${genre} TV shows:`, error);
+                    
+                    // Show error message in the container
+                    const container = document.getElementById(`${genre}-tv`);
+                    if (container) {
+                        container.innerHTML = '<p class="text-red-400 text-center">Error loading shows</p>';
+                    }
+                }
+            }
+        }
         </script>
 </body>
 </html>

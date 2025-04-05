@@ -2,73 +2,203 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon2.ico') }}">
     <title>TV Show Recommendations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+            background: linear-gradient(-45deg, #0f172a, #1e40af, #3b82f6, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tv-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tv-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link a {
+            position: relative;
+        }
+
+        .nav-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link a:hover::after {
+            width: 100%;
+        }
+
+        #chatbot-button {
+            transition: all 0.3s ease;
+        }
+
+        #chatbot-button:hover {
+            transform: scale(1.1);
+        }
+
         body {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            backdrop-filter: blur(5px);
-            {% if searched_show_poster %}
-            background-image: url('{{ searched_show_poster }}');
-            {% else %}
-            background-image: url('default_background_image.jpg');
-            {% endif %}
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+            color: white;
+            min-height: 100vh;
         }
-        .container {
-            padding: 20px;
-            color: #ffffff;
-            text-align: center;
-        }
-        .searched-show {
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-family: Algerian, sans-serif;
-            text-shadow: 2px 2px 4px #000000;
-        }
+
         .show-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
         }
+
         .show-card {
-            background-color: rgba(51, 51, 51, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px;
-            width: 200px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
         }
-        .show-title {
-            text-align: center;
-            margin-top: 10px;
-        }
+
         .show-image {
-            display: block;
-            margin: 0 auto;
-            width: 150px;
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .show-card:hover .show-image {
+            transform: scale(1.05);
+        }
+
+        .show-title {
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2 class="searched-show">Recommendations for {{ searched_show }}</h2>
-        <div class="show-container">
-            {% for i in range(recommend_show|length) %}
-            <div class="show-card">
-                <a href="{{ tmdb_links[i] }}" target="_blank">
-                    <img src="{{ recommend_poster[i] }}" alt="{{ recommend_show[i] }} Poster" class="show-image">
-                </a>
-                <h3 class="show-title">{{ recommend_show[i] }}</h3>
+<body class="min-h-screen bg-gray-900 text-white font-['Poppins']">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="/tv_shows" class="flex items-center mr-4 text-white hover:text-blue-400 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back
+                    </a>
+                    <div class="text-2xl font-bold gradient-text">TVHub</div>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link hover:text-blue-400 transition-colors">Home</a>
+                    <a href="/tv_shows" class="nav-link hover:text-blue-400 transition-colors">TV Shows</a>
+                    <a href="/chat" class="nav-link hover:text-blue-400 transition-colors">AI Chat</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
-            {% endfor %}
         </div>
-    </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 animate-gradient">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 animate__animated animate__fadeInDown gradient-text">
+                Recommendations for "{{ searched_show }}"
+            </h1>
+            <p class="text-xl mb-12 animate__animated animate__fadeInUp text-blue-200">
+                Based on your search, here are some TV shows you might enjoy
+            </p>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="show-container">
+                {% for i in range(recommend_show|length) %}
+                <div class="tv-card glass-effect animate__animated animate__fadeInUp" style="animation-delay: {{ i * 0.1 }}s">
+                    <a href="{{ tmdb_links[i] }}" target="_blank" class="block">
+                        <img src="{{ recommend_poster[i] }}" alt="{{ recommend_show[i] }} Poster" class="show-image">
+                        <h3 class="show-title">{{ recommend_show[i] }}</h3>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Button -->
+    <button id="chatbot-button" 
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600"
+            onclick="openChat()">
+        💬
+    </button>
+
+    <script>
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-gray-900 glass-effect hidden';
+            mobileMenu.innerHTML = `
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex flex-col space-y-4">
+                        <a href="/" class="text-white hover:text-blue-400">Home</a>
+                        <a href="/tv_shows" class="text-white hover:text-blue-400">TV Shows</a>
+                        <a href="/chat" class="text-white hover:text-blue-400">AI Chat</a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        function openChat() {
+            window.location.href = "/chat";
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            setupMobileMenu();
+        });
+    </script>
 </body>
 </html>

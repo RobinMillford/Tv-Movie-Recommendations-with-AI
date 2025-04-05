@@ -5,476 +5,365 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>Movie Recommender System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     <style>
-        html, body {
-            height: 100%;
-            overflow: auto;
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        body {
-            background-image: url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-            background-size: cover;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #ffffff;
+        .animate-gradient {
+            background: linear-gradient(-45deg, #1a1c2e, #2a2d4e, #3a3f6e, #2a2d4e);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            margin-top: 30px;
-            font-size: 60px;
-            font-family: Algerian, sans-serif;
-            text-shadow: 4px 4px 4px #000000;
-        }
-
-        form {
-            text-align: center;
-            margin-top: 20px;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            color: #ffffff;
-            font-size: 30px;
-            font-family: Cooper Black, sans-serif;
-            font-weight: 100;
-        }
-
-        input[type="text"], input[type="submit"] {
-            padding: 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #2c2424cb;
-            color: #ffffff;
-            font-size: 16px;
-            width: 800px;
-            margin-right: 10px;
-            margin-bottom: 75px;
-        }
-
-        input[type="submit"] {
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: 300px;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #c82424;
-        }
-
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            border-radius: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 99;
-            background-color: #2c2424cb;
-            width: 300px;
-            padding: 10px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .autocomplete-items div {
-            display: flex;
-            align-items: center;
-            padding: 5px;
-            cursor: pointer;
-            color: #ffffff;
-        }
-
-        .autocomplete-items img {
-            width: 50px;
-            height: 75px;
-            margin-right: 10px;
-            border-radius: 5px;
-        }
-
-        .autocomplete-items div:hover {
-            background-color: #c82424;
-        }
-
-        .category-container {
-            width: 100%;
-            max-width: 1300px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .category-title {
-            font-size: 30px;
-            font-family: Cooper Black, sans-serif;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .top-categories, .other-categories {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-
-        .category-button {
-            padding: 10px 20px;
-            border-radius: 25px;
-            background-color: #c82424;
-            margin: 5px;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-
-        .category-button:hover {
-            background-color: #a61b1b;
-        }
-        
-        .movie-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .movie-card {
-            background-color: rgba(51, 51, 51, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px;
-            width: 150px;
-            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .movie-card h3 {
-            font-size: 14px;
-            margin-top: 10px;
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
-.header {
-    padding: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #000000; /* Added background color */
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 10;
+        }
 
-}
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
 
-.nav-link {
-    color: white;
-    font-size: 20px;
-    font-weight: 400;
-    display: flex;
-    gap: 15px;
-    cursor: pointer;
-    margin-left: auto;
-}
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
 
-.nav-link a {
-    text-decoration: none;
-    color: white;
-    transition: color 0.3s;
-}
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+        }
 
-.nav-link a:hover {
-    color: #c82424;
-}
+        .category-button {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-/* Off-Screen Menu */
-.off-screen-menu {
-    background-color: rgba(0, 0, 0, 0.9);
-    height: 100%;
-    width: 0px; /* Initially hidden */
-    position: fixed;
-    top: 0;
-    right: 0;
-    overflow-x: hidden;
-    transition: width 0.5s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+        .category-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
 
-.off-screen-menu.active {
-    width: 250px;
-}
+        .trending-slider {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
 
-.off-screen-menu ul {
-    list-style-type: none;
-    padding: 0;
-}
+        .trending-slider::-webkit-scrollbar {
+            display: none;
+        }
 
-.off-screen-menu li {
-    margin-bottom: 20px;
-}
+        .nav-link a {
+            position: relative;
+        }
 
-.off-screen-menu a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 1.5rem;
-    transition: color 0.3s;
-}
-
-.off-screen-menu a:hover {
-    color: #c82424;
-}
-
-/* Hamburger Menu */
-.ham-menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 1000;
+        .nav-link a::after {
+            content: '';
     position: absolute;
-    left: 20px; /* Position it properly */
-}
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #4f46e5;
+            transition: width 0.3s ease;
+        }
 
-.ham-menu span {
-    height: 3px;
-    width: 30px;
-    background-color: #ffffff;
-    margin: 5px 0;
-    transition: transform 0.3s, opacity 0.3s;
-}
+        .nav-link a:hover::after {
+            width: 100%;
+        }
 
-.ham-menu.active span:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-}
-
-.ham-menu.active span:nth-child(2) {
-    opacity: 0;
-}
-
-.ham-menu.active span:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
-}
-
-/* Floating Chatbot Button */
 #chatbot-button {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #c82c1e;
-    color: white;
-    font-size: 24px;
-    text-align: center;
-    line-height: 60px;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s;
-    z-index: 1000;
+            transition: all 0.3s ease;
 }
 
 #chatbot-button:hover {
-    background-color: #0056b3;
-}
-
-/* Tooltip Styling */
-#chatbot-tooltip {
-    position: fixed;
-    bottom: 90px; /* Adjusted for proper positioning */
-    left: 30px; /* Moved tooltip to align with the button on the left */
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    white-space: nowrap;
-    display: none;
-    z-index: 1001;
-}
-
-#trending-movies {
-            width: 80%;
-            max-width: 1200px;
-            margin-top: 20px;
-            text-align: center;
+            transform: scale(1.1);
         }
 
-    .trending-container {
-        width: 100%;
-        max-width: 1300px;
-        margin: 20px auto;
-        text-align: center;
-    }
+        .trailer-card {
+            transition: all 0.3s ease;
+        }
 
-    .trending-title {
-        font-size: 28px;
-        font-family: Cooper Black, sans-serif;
-        color: white;
-        margin-bottom: 10px;
-    }
+        .trailer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
 
-    .trending-slider {
-        display: flex;
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        gap: 15px;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        border-radius: 10px;
-        scrollbar-width: none; /* Hide scrollbar */
-    }
-
-    .trending-slider::-webkit-scrollbar {
-        display: none; /* Hide scrollbar for Chrome, Safari */
-    }
-
-    .movie-card {
-        flex: 0 0 auto;
-        width: 150px;
-        text-align: center;
-        background-color: rgba(51, 51, 51, 0.8);
-        padding: 10px;
-        border-radius: 5px;
-        transition: transform 0.3s;
-    }
-
-    .movie-card:hover {
-        transform: scale(1.05);
-    }
-
-    .movie-card img {
-        width: 100%;
-        border-radius: 5px;
-    }
-
-    .movie-card h3 {
-        font-size: 14px;
-        margin-top: 10px;
-        color: white;
-    }
-    .recent-container {
-    width: 100%;
-    max-width: 1300px; /* Increased max-width for larger screen sizes */
-    margin: 30px auto; /* Increased margin for better spacing */
-    text-align: center;
-}
-
-.recent-title {
-    font-size: 28px; /* Larger font for the title */
-    font-family: Cooper Black, sans-serif;
-    color: white;
-    margin-bottom: 30px; /* Increased margin for better spacing */
-}
-
-.recent-slider {
-    display: flex;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 30px; /* Increased gap for better spacing between cards */
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 10px; /* Slightly increased border-radius for a smoother look */
-    scrollbar-width: none; /* Hide scrollbar */
-}
-
-.recent-slider::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome, Safari */
-}
-
-.movie-card1 {
-    flex: 0 0 auto;
-    width: 300px; /* Increased width for better viewing of the trailers */
-    text-align: center;
-    background-color: rgba(51, 51, 51, 0.8);
-    padding: 10px; /* Added more padding for better aesthetics */
-    border-radius: 8px; /* Slightly rounded corners */
-    transition: transform 0.3s;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); /* Added shadow for better visual effect */
-}
-
-.movie-card1:hover {
-    transform: scale(1.05);
-}
-
-.movie-card1 iframe {
-    width: 100%;
-    height: 250px; /* Increased height for better aspect ratio for trailers */
-    border-radius: 8px;
-    border: none;
-}
-
-.movie-card1 h3 {
-    font-size: 18px; /* Larger font size for better readability */
-    margin-top: 15px; /* More space between title and trailer */
-    color: white;
-    word-wrap: break-word; /* Ensure long movie titles don't overflow */
-}
-
-.movie-card1 img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px; /* Matching rounded corners with the iframe */
-}
-
+        #autocomplete-items {
+            z-index: 50;
+            max-height: 300px;
+            overflow-y: auto;
+        }
     </style>
 </head>
-<body>
-        <div>
-            <div class="header">
-                <div class="nav-link">
-                    <a href="/">Home</a>
-                    <a href="/tv_shows">TV Shows & Anime</a>
-                    <a href="/chat">Chat with AI</a>
-                </div>      
+<body class="min-h-screen bg-gray-900 text-white font-['Poppins']">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold gradient-text">MovieHub</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link hover:text-indigo-400 transition-colors">Home</a>
+                    <a href="/tv_shows" class="nav-link hover:text-indigo-400 transition-colors">TV Shows</a>
+                    <a href="/chat" class="nav-link hover:text-indigo-400 transition-colors">AI Chat</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
+    </nav>
 
-    <div class="off-screen-menu">
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/tv_shows">TV Shows & Anime</a></li>
-            <li><a href="/chat">Chat with AI</a></li>
-        </ul>
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 animate-gradient">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 animate__animated animate__fadeInDown gradient-text">
+                Discover Your Next Favorite Movie
+            </h1>
+            <p class="text-xl mb-12 animate__animated animate__fadeInUp text-indigo-200 float">
+                Get personalized recommendations powered by AI
+            </p>
+            
+            <!-- Search Bar -->
+            <div class="search-container animate__animated animate__fadeInUp">
+                <form action="/recommend" method="post" class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-grow">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="movie_name" id="movie_name" 
+                               class="search-input" placeholder="Search for movies...">
+                        <div id="autocomplete-items" class="absolute w-full mt-2 glass-effect rounded-lg hidden"></div>
+                    </div>
+                    <button type="submit" 
+                            class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105">
+                        Find Movies
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Trailers Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">Latest Trailers</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="featured-trailers">
+                <!-- Loading skeleton -->
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+            </div>
+                </div>      
+    </section>
+
+    <!-- Trending Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Trending Now</h2>
+            <div class="trending-slider flex overflow-x-auto gap-6 pb-8" id="trending-slider">
+                <!-- Loading skeleton -->
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">Browse by Category</h2>
+            
+            <!-- Top Categories -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 text-center text-indigo-200">Popular Categories</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Action Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Action</h4>
+                            <a href="/genre/action" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="action-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comedy Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Comedy</h4>
+                            <a href="/genre/comedy" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="comedy-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Drama Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Drama</h4>
+                            <a href="/genre/drama" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="drama-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Romance Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Romance</h4>
+                            <a href="/genre/romance" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="romance-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
     </div>
 
-    <div class="ham-menu" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+                    <!-- Thriller Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Thriller</h4>
+                            <a href="/genre/thriller" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="thriller-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
     </div>
     
-    <h1>Movie Recommender System</h1>
-    <div class="trending-container">
-        <h2 class="trending-title">Trending Movies</h2>
-        <div class="trending-slider" id="trending-slider">
+                    <!-- Horror Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Horror</h4>
+                            <a href="/genre/horror" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="horror-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Chat Button -->
+    <button id="chatbot-button" 
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg"
+            onclick="openChat()">
+        💬
+    </button>
+
     <script>
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const API_KEY = '{{ api_key }}';
+
         document.addEventListener("DOMContentLoaded", function() {
             fetchTrendingMovies();
+            fetchLatestTrailers();
+            setupMobileMenu();
+            fetchMoviesByGenres();
         });
+
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-gray-900 glass-effect hidden';
+            mobileMenu.innerHTML = `
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex flex-col space-y-4">
+                        <a href="/" class="text-white hover:text-indigo-400">Home</a>
+                        <a href="/tv_shows" class="text-white hover:text-indigo-400">TV Shows</a>
+                        <a href="/chat" class="text-white hover:text-indigo-400">AI Chat</a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
     
         function fetchTrendingMovies() {
-            fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key={{ api_key }}`)
+            fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`)
             .then(response => response.json())
             .then(data => {
                 const slider = document.getElementById("trending-slider");
+                slider.innerHTML = ''; // Clear loading skeletons
                 data.results.forEach(movie => {
-                    let posterUrl = movie.poster_path 
-                        ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` 
-                        : "https://via.placeholder.com/150x225?text=No+Image";
-                    let movieCard = document.createElement("div");
-                    movieCard.classList.add("movie-card");
+                    const posterUrl = movie.poster_path 
+                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+                        : "https://via.placeholder.com/500x750?text=No+Image";
+                    
+                    const movieCard = document.createElement("div");
+                    movieCard.className = "movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden";
                     movieCard.innerHTML = `
-                        <a href="https://www.themoviedb.org/movie/${movie.id}" target="_blank">
-                            <img src="${posterUrl}" alt="${movie.title}">
-                            <h3>${movie.title}</h3>
+                        <a href="/movie/${movie.id}" class="block">
+                            <img src="${posterUrl}" alt="${movie.title}" class="w-full h-72 object-cover">
+                            <div class="p-4">
+                                <h3 class="font-semibold text-sm">${movie.title}</h3>
+                                <p class="text-gray-400 text-xs">${movie.release_date}</p>
+                            </div>
                         </a>
                     `;
                     slider.appendChild(movieCard);
@@ -482,66 +371,44 @@
             })
             .catch(error => console.error("Error fetching trending movies:", error));
         }
-    </script>    
-    <form autocomplete="off" action="/recommend" method="post">
-        <label for="movie_name">Search for a movie:</label>
-        <input type="text" id="movie_name" name="movie_name" placeholder="Search for a movie...">
-        <input type="submit" value="Show Recommendations">
-        <div class="autocomplete-items" id="autocomplete-items"></div>
-    </form>
-    <div class="recent-container">
-        <h2 class="recent-title">Recent and Upcoming Movies</h2>
-        <div class="recent-slider" id="recent-slider">
-            <!-- Trailers will be inserted here dynamically -->
-        </div>         
-    </div>
-    <script>
-const API_KEY = "{{ api_key }}"; 
-const BASE_URL = 'https://api.themoviedb.org/3';
 
-// Fetch only "Upcoming" movies and their trailers without repetition
-async function fetchMovies() {
+        async function fetchLatestTrailers() {
+            try {
     const upcomingUrl = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`;
-    const currentYear = new Date().getFullYear();
-    const trailerSet = new Set(); // Store unique trailer URLs
-
-    try {
-        const upcomingResponse = await fetch(upcomingUrl);
-        const upcomingData = await upcomingResponse.json();
-        
-        let movies = upcomingData.results;
-
-        // 🔹 Remove old movies (ensure only recent/upcoming movies)
-        movies = movies.filter(movie => {
-            const movieYear = movie.release_date ? parseInt(movie.release_date.split('-')[0]) : currentYear;
-            return movieYear >= currentYear; // Only include movies releasing this year or later
-        });
-
-        // 🔹 Fetch trailers for all upcoming movies
+                const response = await fetch(upcomingUrl);
+                const data = await response.json();
+                
+                const movies = data.results.slice(0, 6); // Get first 6 upcoming movies
         const trailerPromises = movies.map(movie => fetchMovieTrailer(movie.id));
         const trailers = await Promise.all(trailerPromises);
 
-        // 🔹 Filter movies that have unique trailers
-        const filteredMovies = [];
-        const filteredTrailers = [];
+                const featuredTrailers = document.getElementById('featured-trailers');
+                featuredTrailers.innerHTML = ''; // Clear loading skeletons
 
-        trailers.forEach((trailer, index) => {
-            if (trailer && !trailerSet.has(trailer)) { // Avoid duplicate trailers
-                trailerSet.add(trailer);
-                filteredMovies.push(movies[index]);
-                filteredTrailers.push(trailer);
-            }
-        });
-
-        // 🔹 Display upcoming movies with trailers
-        displayMovies(filteredMovies, filteredTrailers, "Upcoming Movie Trailers");
-
+                movies.forEach((movie, index) => {
+                    if (trailers[index]) {
+                        const trailerCard = document.createElement('div');
+                        trailerCard.className = 'trailer-card glass-effect rounded-lg overflow-hidden';
+                        trailerCard.innerHTML = `
+                            <div class="aspect-w-16 aspect-h-9">
+                                <iframe src="${trailers[index]}" 
+                                        class="w-full h-64 rounded-lg"
+                                        allowFullscreen>
+                                </iframe>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg mb-2">${movie.title}</h3>
+                                <p class="text-gray-400 text-sm">${movie.release_date}</p>
+                            </div>
+                        `;
+                        featuredTrailers.appendChild(trailerCard);
+                    }
+                });
     } catch (error) {
-        console.error("Error fetching movies:", error);
+                console.error("Error fetching latest trailers:", error);
     }
 }
 
-// Fetch movie trailers
 async function fetchMovieTrailer(movieId) {
     const url = `${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`;
 
@@ -549,119 +416,64 @@ async function fetchMovieTrailer(movieId) {
         const response = await fetch(url);
         const data = await response.json();
 
-        // Prioritize official trailers, then teasers
-        let trailer = data.results.find(video => video.type === 'Trailer' && video.site === "YouTube" && video.official);
+                let trailer = data.results.find(video => 
+                    video.type === 'Trailer' && 
+                    video.site === "YouTube" && 
+                    video.official
+                );
+                
         if (!trailer) {
-            trailer = data.results.find(video => video.type === 'Teaser' && video.site === "YouTube");
+                    trailer = data.results.find(video => 
+                        video.type === 'Teaser' && 
+                        video.site === "YouTube"
+                    );
         }
+                
         if (!trailer) {
             trailer = data.results.find(video => video.site === "YouTube");
         }
 
         return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
-
     } catch (error) {
         console.error(`Error fetching trailer for movie ID ${movieId}:`, error);
         return null;
     }
 }
 
-// Display movies and their trailers
-function displayMovies(movies, trailers, sectionTitle) {
-    const slider = document.getElementById('recent-slider');
-    slider.innerHTML = ''; // Clear previous content
-
-    movies.forEach((movie, index) => {
-        const movieCard = document.createElement('div');
-        movieCard.classList.add('movie-card1');
-
-        // Embed the YouTube trailer
-        const iframe = document.createElement('iframe');
-        iframe.src = trailers[index];
-        iframe.allowFullscreen = true;
-        movieCard.appendChild(iframe);
-
-        // Movie Title (Clickable)
-        const movieTitle = document.createElement('h3');
-        movieTitle.textContent = movie.title;
-        movieTitle.classList.add('movie-title');
-        movieTitle.onclick = () => window.open(`https://www.themoviedb.org/movie/${movie.id}`, '_blank');
-        movieCard.appendChild(movieTitle);
-
-        slider.appendChild(movieCard);
-    });
-}
-
-// Load trailers on page load
-fetchMovies();
-    </script>        
-    <!-- Categories -->
-    <div class="category-container">
-        <h2 class="category-title">Top Categories</h2>
-        <div class="top-categories">
-            <a href="/genre/action" class="category-button">Action</a>
-            <a href="/genre/adventure" class="category-button">Adventure</a>
-            <a href="/genre/comedy" class="category-button">Comedy</a>
-            <a href="/genre/drama" class="category-button">Drama</a>
-            <a href="/genre/romance" class="category-button">Romance</a>
-        </div>
-    </div>
-
-    <div class="category-container">
-        <h2 class="category-title">Other Categories</h2>
-        <div class="other-categories">
-            <a href="/genre/fantasy" class="category-button">Fantasy</a>
-            <a href="/genre/science_fiction" class="category-button">Science Fiction</a>
-            <a href="/genre/mystery" class="category-button">Mystery</a>
-            <a href="/genre/thriller" class="category-button">Thriller</a>
-            <a href="/genre/horror" class="category-button">Horror</a>
-            <a href="/genre/western" class="category-button">Western</a>
-            <a href="/genre/animation" class="category-button">Animation</a>
-            <a href="/genre/crime" class="category-button">Crime</a>
-            <a href="/genre/family" class="category-button">Family</a>
-            <a href="/genre/history" class="category-button">History</a>
-            <a href="/genre/music" class="category-button">Music</a>
-            <a href="/genre/war" class="category-button">War</a>
-            <a href="/genre/documentary" class="category-button">Documentary</a>
-            <a href="/genre/tv_movie" class="category-button">TV Movie</a>
-            <!-- Add more genre buttons here -->
-        </div>
-    </div>    
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-    const hamMenu = document.querySelector(".ham-menu");
-    const offScreenMenu = document.querySelector(".off-screen-menu");
-
-    if (hamMenu && offScreenMenu) {
-        hamMenu.addEventListener("click", () => {
-            const isActive = offScreenMenu.classList.toggle("active");
-            hamMenu.classList.toggle("active", isActive);
-
-            // Accessibility improvements
-            offScreenMenu.setAttribute("aria-expanded", isActive);
-            hamMenu.setAttribute("aria-label", isActive ? "Close menu" : "Open menu");
-        });
-    }
-});
-
-
+        // Search functionality with modern styling
         document.getElementById("movie_name").addEventListener("input", function() {
-            var input = this.value.toLowerCase();
-            var autocompleteContainer = document.getElementById("autocomplete-items");
+            const input = this.value.toLowerCase();
+            const autocompleteContainer = document.getElementById("autocomplete-items");
             autocompleteContainer.innerHTML = "";
 
-            fetch(`https://api.themoviedb.org/3/search/movie?api_key={{ api_key }}&language=en-US&query=${input}&page=1&include_adult=true`)
+            if (input.length < 2) {
+                autocompleteContainer.style.display = "none";
+                return;
+            }
+
+            fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&query=${input}&page=1&include_adult=true`)
             .then(response => response.json())
             .then(data => {
                 data.results.forEach(movie => {
-                    var suggestion = document.createElement("div");
-                    var posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w92/${movie.poster_path}` : "https://via.placeholder.com/50x75?text=No+Image";
-                    suggestion.innerHTML = `<img src="${posterUrl}" alt="Poster"><span>${movie.title} (${movie.release_date})</span>`;
+                    const suggestion = document.createElement("div");
+                    const posterUrl = movie.poster_path 
+                        ? `https://image.tmdb.org/t/p/w92/${movie.poster_path}` 
+                        : "https://via.placeholder.com/92x138?text=No+Image";
+                    
+                    suggestion.className = "autocomplete-item flex items-center p-2 glass-effect";
+                    suggestion.innerHTML = `
+                        <img src="${posterUrl}" alt="Poster" class="w-12 h-18 object-cover rounded mr-3">
+                        <div>
+                            <div class="font-medium">${movie.title}</div>
+                            <div class="text-sm text-gray-400">${movie.release_date}</div>
+                        </div>
+                    `;
+                    
                     suggestion.addEventListener("click", function() {
                         document.getElementById("movie_name").value = movie.title;
-                        autocompleteContainer.innerHTML = "";
+                        autocompleteContainer.style.display = "none";
                     });
+                    
                     autocompleteContainer.appendChild(suggestion);
                 });
 
@@ -676,33 +488,51 @@ fetchMovies();
             }
         });
 
-        // JavaScript for handling button clicks to redirect to genre pages
-        document.querySelectorAll('.category-button').forEach(item => {
-            item.addEventListener('click', event => {
-                // Prevent default behavior of the anchor tag
-                event.preventDefault();
-                // Get the href attribute value of the clicked button
-                const genreUrl = event.target.getAttribute('href');
-                // Redirect to the genre page
-                window.location.href = genreUrl;
-            });
-        });
-    </script>
-    <!-- Floating Chatbot Button -->
-    <div id="chatbot-button" onmouseover="showTooltip()" onmouseout="hideTooltip()" onclick="openChat()">💬</div>
-    <div id="chatbot-tooltip">Chat with Ai</div>
-
-    <script>
         function openChat() {
-            window.location.href = "/chat";  // Redirect to /chat
+            window.location.href = "/chat";
         }
 
-        function showTooltip() {
-            document.getElementById("chatbot-tooltip").style.display = "block";
-        }
+        // Add this new function to fetch movies by genres
+        async function fetchMoviesByGenres() {
+            const genres = {
+                'action': 28,
+                'comedy': 35,
+                'drama': 18,
+                'romance': 10749,
+                'thriller': 53,
+                'horror': 27
+            };
 
-        function hideTooltip() {
-            document.getElementById("chatbot-tooltip").style.display = "none";
+            for (const [genre, id] of Object.entries(genres)) {
+                try {
+                    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${id}&sort_by=popularity.desc&page=1`);
+                    const data = await response.json();
+                    
+                    const container = document.getElementById(`${genre}-movies`);
+                    container.innerHTML = ''; // Clear loading skeletons
+                    
+                    data.results.slice(0, 5).forEach(movie => {
+                        const posterUrl = movie.poster_path 
+                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+                            : "https://via.placeholder.com/500x750?text=No+Image";
+                        
+                        const movieCard = document.createElement("div");
+                        movieCard.className = "movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden";
+                        movieCard.innerHTML = `
+                            <a href="/movie/${movie.id}" class="block">
+                                <img src="${posterUrl}" alt="${movie.title}" class="w-full h-48 object-cover">
+                                <div class="p-2">
+                                    <h3 class="font-semibold text-xs truncate">${movie.title}</h3>
+                                    <p class="text-gray-400 text-xs">${movie.release_date}</p>
+                                </div>
+                            </a>
+                        `;
+                        container.appendChild(movieCard);
+                    });
+                } catch (error) {
+                    console.error(`Error fetching ${genre} movies:`, error);
+                }
+            }
         }
     </script>
 </body>

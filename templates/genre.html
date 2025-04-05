@@ -3,81 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>{{ genre_name }} Movies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #0e0e0e;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #ffffff; /* Changed font color to white */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 20px auto;
-            text-align: center;
+        .animate-gradient {
+            background: linear-gradient(-45deg, #1a1c2e, #2a2d4e, #3a3f6e, #2a2d4e);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
         }
 
-        h1 {
-            margin-bottom: 20px;
-            font-size: 36px;
-        }
-
-        .movie-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .movie-card {
-            background-color: #5f5b5b;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px;
-            width: 150px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            /* Added cursor pointer to indicate clickable */
-            cursor: pointer;
-            /* Added position relative */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link a {
             position: relative;
         }
 
-        .movie-card a {
-            display: block;
-            width: 100%;
-            height: 100%;
+        .nav-link a::after {
+            content: '';
             position: absolute;
-            top: 0;
+            bottom: -2px;
             left: 0;
+            width: 0;
+            height: 2px;
+            background: #4f46e5;
+            transition: width 0.3s ease;
         }
 
-        .movie-card img {
+        .nav-link a:hover::after {
             width: 100%;
-            border-radius: 5px;
         }
 
-        .movie-card h3 {
-            font-size: 14px;
-            margin-top: 10px;
+        #chatbot-button {
+            transition: all 0.3s ease;
+        }
+
+        #chatbot-button:hover {
+            transform: scale(1.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .movie-image {
+            width: 100%;
+            height: 270px;
+            object-fit: cover;
+            border-radius: 0.5rem 0.5rem 0 0;
+            transition: transform 0.5s ease;
+        }
+
+        .movie-card:hover .movie-image {
+            transform: scale(1.05);
+        }
+
+        .movie-title {
+            padding: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .movie-date {
+            padding: 0 0.75rem 0.75rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>{{ genre_name }} Movies</h1>
-        <div class="movie-grid">
-            {% for movie in movies %}
-                <!-- Anchor tag inside the movie card div -->
-                <div class="movie-card">
-                    <a href="https://www.themoviedb.org/movie/{{ movie.id }}" target="_blank" rel="noopener noreferrer"></a>
-                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }} Poster">
-                    <h3>{{ movie.title }}</h3>
+<body class="min-h-screen bg-gray-900 text-white font-['Poppins']">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center mr-4 text-white hover:text-indigo-400 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back
+                    </a>
+                    <div class="text-2xl font-bold gradient-text">MovieHub</div>
                 </div>
-            {% endfor %}
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link hover:text-indigo-400 transition-colors">Home</a>
+                    <a href="/tv_shows" class="nav-link hover:text-indigo-400 transition-colors">TV Shows</a>
+                    <a href="/chat" class="nav-link hover:text-indigo-400 transition-colors">AI Chat</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
-    </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 animate-gradient">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 animate__animated animate__fadeInDown gradient-text">
+                {{ genre_name }} Movies
+            </h1>
+            <p class="text-xl mb-12 animate__animated animate__fadeInUp text-indigo-200">
+                Discover the best {{ genre_name.lower() }} movies for your next movie night
+            </p>
+        </div>
+    </section>
+
+    <!-- Movies Grid Section -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="movie-grid">
+                {% for movie in movies %}
+                <div class="movie-card glass-effect animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                    <a href="/movie/{{ movie.id }}" class="block">
+                        <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }} Poster" class="movie-image">
+                        <h3 class="movie-title">{{ movie.title }}</h3>
+                        <p class="movie-date">{{ movie.release_date }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Button -->
+    <button id="chatbot-button" 
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg bg-gradient-to-r from-indigo-600 to-purple-600"
+            onclick="openChat()">
+        💬
+    </button>
+
+    <script>
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-gray-900 glass-effect hidden';
+            mobileMenu.innerHTML = `
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex flex-col space-y-4">
+                        <a href="/" class="text-white hover:text-indigo-400">Home</a>
+                        <a href="/tv_shows" class="text-white hover:text-indigo-400">TV Shows</a>
+                        <a href="/chat" class="text-white hover:text-indigo-400">AI Chat</a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        function openChat() {
+            window.location.href = "/chat";
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            setupMobileMenu();
+        });
+    </script>
 </body>
 </html>
