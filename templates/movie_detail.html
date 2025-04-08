@@ -324,37 +324,37 @@
         </div>
     </section>
 
-    <!-- Cast Section -->
-    <section class="py-16 bg-gray-900">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Top Billed Cast</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" id="cast-grid">
-                {% for cast in movie.cast[:6] %}
-                <div class="cast-card glass-effect rounded-lg overflow-hidden">
-                    <img src="{{ cast.profile_path }}" alt="{{ cast.name }}" class="cast-image w-full" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
-                    <div class="p-4">
-                        <h3 class="font-semibold text-sm">{{ cast.name }}</h3>
-                        <p class="text-gray-400 text-xs">{{ cast.character }}</p>
-                    </div>
+<!-- Cast Section -->
+<section class="py-16 bg-gray-900">
+    <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Top Billed Cast</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6" id="cast-grid">
+            {% for cast in movie.cast[:6] %}
+            <a href="/actor/{{ cast.id }}" class="cast-card glass-effect rounded-lg overflow-hidden block">
+                <img src="{{ cast.profile_path }}" alt="{{ cast.name }}" class="cast-image w-full" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                <div class="p-4">
+                    <h3 class="font-semibold text-sm text-white hover:text-indigo-300 transition-colors">{{ cast.name }}</h3>
+                    <p class="text-gray-400 text-xs">{{ cast.character }}</p>
                 </div>
-                {% endfor %}
-            </div>
-            <div class="text-center mt-8">
-                <button id="view-full-cast" class="text-indigo-400 hover:text-indigo-300 transition-colors">View Full Cast & Crew</button>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 hidden" id="full-cast-grid">
-                {% for cast in movie.cast[6:] %}
-                <div class="cast-card glass-effect rounded-lg overflow-hidden">
-                    <img src="{{ cast.profile_path }}" alt="{{ cast.name }}" class="cast-image w-full" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
-                    <div class="p-4">
-                        <h3 class="font-semibold text-sm">{{ cast.name }}</h3>
-                        <p class="text-gray-400 text-xs">{{ cast.character }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+            </a>
+            {% endfor %}
         </div>
-    </section>
+        <div class="text-center mt-8">
+            <button id="view-full-cast" class="text-indigo-400 hover:text-indigo-300 transition-colors">View Full Cast & Crew</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 hidden" id="full-cast-grid">
+            {% for cast in movie.cast[6:] %}
+            <a href="/actor/{{ cast.id }}" class="cast-card glass-effect rounded-lg overflow-hidden block">
+                <img src="{{ cast.profile_path }}" alt="{{ cast.name }}" class="cast-image w-full" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                <div class="p-4">
+                    <h3 class="font-semibold text-sm text-white hover:text-indigo-300 transition-colors">{{ cast.name }}</h3>
+                    <p class="text-gray-400 text-xs">{{ cast.character }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 
     <!-- Movie Details Section -->
     <section class="py-16">
@@ -567,4 +567,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

@@ -100,7 +100,9 @@ Tv-Movie-Recommendations/
 │   ├── tv_recommend.html
 │   ├── chat.html  # New: Chat interface for movie recommendations
 │   ├── movie_detail.html  # New: Enhanced movie details display
-│   └── tv_detail.html  # New: Enhanced TV show details display
+│   ├── tv_detail.html  # New: Enhanced TV show details display
+│   ├── actor_detail.html  # New: Actor details display
+│   └── error.html  # New: Error message display
 └── static/
     └── styles.css  # New: Custom styles for improved UI
 ```

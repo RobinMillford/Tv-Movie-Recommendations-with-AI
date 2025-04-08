@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - ActorHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #111827;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="text-3xl font-bold mb-4">Error</h1>
+        <p class="mb-4">{{ message }}</p>
+        <a href="/" class="text-indigo-400 hover:text-indigo-300">Go Back Home</a>
+    </div>
+</body>
+</html>
