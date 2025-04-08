@@ -98,16 +98,20 @@ def recommend():
         
         recommend_movie = []
         recommend_poster = []
-        tmdb_links = []
+        recommend_ids = []  # New list to store movie IDs
         
         for rec in tmdb_recommendations:
             if rec['id'] != searched_movie_id:
                 recommend_movie.append(rec['title'])
                 recommend_poster.append(fetch_poster(rec['id']))
-                tmdb_links.append(f"https://www.themoviedb.org/movie/{rec['id']}/")
+                recommend_ids.append(rec['id'])  # Store the movie ID
 
-        return render_template('recommend.html', searched_movie=movie_name, searched_movie_poster=searched_movie_poster,
-                               recommend_movie=recommend_movie, recommend_poster=recommend_poster, tmdb_links=tmdb_links)
+        return render_template('recommend.html', 
+                               searched_movie=movie_name, 
+                               searched_movie_poster=searched_movie_poster,
+                               recommend_movie=recommend_movie, 
+                               recommend_poster=recommend_poster, 
+                               recommend_ids=recommend_ids)  # Pass the IDs to the template
     else:
         return render_template('no_results.html', searched_movie=movie_name)
 
@@ -129,16 +133,20 @@ def tv_recommend():
         
         recommend_show = []
         recommend_poster = []
-        tmdb_links = []
+        recommend_ids = []  # New list to store TV show IDs
         
         for rec in tmdb_recommendations:
             if rec['id'] != searched_show_id:
                 recommend_show.append(rec['name'])
                 recommend_poster.append(fetch_poster(rec['id'], is_movie=False))
-                tmdb_links.append(f"https://www.themoviedb.org/tv/{rec['id']}/")
+                recommend_ids.append(rec['id'])  # Store the TV show ID
 
-        return render_template('tv_recommend.html', searched_show=show_name, searched_show_poster=searched_show_poster,
-                               recommend_show=recommend_show, recommend_poster=recommend_poster, tmdb_links=tmdb_links)
+        return render_template('tv_recommend.html', 
+                               searched_show=show_name, 
+                               searched_show_poster=searched_show_poster,
+                               recommend_show=recommend_show, 
+                               recommend_poster=recommend_poster, 
+                               recommend_ids=recommend_ids)  # Pass the IDs to the template
     else:
         return render_template('no_results.html', searched_show=show_name)
 

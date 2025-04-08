@@ -182,7 +182,7 @@
             <div class="movie-container">
                 {% for i in range(recommend_movie|length) %}
                 <div class="movie-card glass-effect animate__animated animate__fadeInUp" style="animation-delay: {{ i * 0.1 }}s">
-                    <a href="{{ tmdb_links[i] }}" target="_blank" class="block">
+                    <a href="/movie/{{ recommend_ids[i] }}" class="block">
                         <img src="{{ recommend_poster[i] }}" alt="{{ recommend_movie[i] }} Poster" class="movie-image">
                         <h3 class="movie-title">{{ recommend_movie[i] }}</h3>
                     </a>

@@ -154,7 +154,7 @@
             <div class="show-container">
                 {% for i in range(recommend_show|length) %}
                 <div class="tv-card glass-effect animate__animated animate__fadeInUp" style="animation-delay: {{ i * 0.1 }}s">
-                    <a href="{{ tmdb_links[i] }}" target="_blank" class="block">
+                    <a href="/tv/{{ recommend_ids[i] }}" class="block">
                         <img src="{{ recommend_poster[i] }}" alt="{{ recommend_show[i] }} Poster" class="show-image">
                         <h3 class="show-title">{{ recommend_show[i] }}</h3>
                     </a>
