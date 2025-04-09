@@ -433,8 +433,8 @@
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
-        </div>
-    </div>
+                        </div>
+                    </div>
 
                     <!-- Sci-Fi Category -->
                     <div class="category-section glass-effect rounded-lg p-6">
@@ -448,7 +448,7 @@
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                         </div>
-    </div>
+                    </div>
 
                     <!-- War Category -->
                     <div class="category-section glass-effect rounded-lg p-6">
@@ -462,7 +462,7 @@
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                             <div class="tv-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
                         </div>
-    </div>
+                    </div>
 
                     <!-- Western Category -->
                     <div class="category-section glass-effect rounded-lg p-6">
@@ -478,7 +478,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>
         </div>
     </section>
 
@@ -683,8 +683,8 @@
                     suggestion.addEventListener("click", function() {
                         document.getElementById("show_name").value = show.name;
                         autocompleteContainer.style.display = "none";
-                        // Redirect to the TV show detail page
-                        window.location.href = `/tv/${show.id}`;
+                        // Submit the form for recommendations
+                        document.querySelector('form[action="/tv_recommend"]').submit();
                     });
                     
                     autocompleteContainer.appendChild(suggestion);
