@@ -29,6 +29,221 @@ prompt_template = PromptTemplate(
 
 conversation_chain = prompt_template | chatbot
 
+def fetch_now_playing_movies(max_movies=18):
+    url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
+    return [
+        {
+            'id': movie['id'],
+            'title': movie['title'],
+            'release_date': movie.get('release_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"
+        } for movie in filtered_results[:max_movies]
+    ]
+
+def fetch_popular_movies(max_movies=18):
+    url = f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
+    return [
+        {
+            'id': movie['id'],
+            'title': movie['title'],
+            'release_date': movie.get('release_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"
+        } for movie in filtered_results[:max_movies]
+    ]
+
+def fetch_upcoming_movies(max_movies=18):
+    url = f"https://api.themoviedb.org/3/movie/upcoming?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
+    return [
+        {
+            'id': movie['id'],
+            'title': movie['title'],
+            'release_date': movie.get('release_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{movie['poster_path']}"
+        } for movie in filtered_results[:max_movies]
+    ]
+
+def fetch_trending_people(time_window='week', max_people=18):
+    url = f"https://api.themoviedb.org/3/trending/person/{time_window}?api_key={TMDB_API_KEY}"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [person for person in results if person.get('profile_path') and person.get('name')]
+    return [
+        {
+            'id': person['id'],
+            'name': person['name'],
+            'known_for_department': person.get('known_for_department', 'N/A'),
+            'profile_path': f"https://image.tmdb.org/t/p/w500{person['profile_path']}"
+        } for person in filtered_results[:max_people]
+    ]
+
+# New Helper Functions for TV Shows
+def fetch_airing_today_shows(max_shows=18):
+    url = f"https://api.themoviedb.org/3/tv/airing_today?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
+    return [
+        {
+            'id': show['id'],
+            'name': show['name'],
+            'first_air_date': show.get('first_air_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+        } for show in filtered_results[:max_shows]
+    ]
+
+def fetch_on_the_air_shows(max_shows=18):
+    url = f"https://api.themoviedb.org/3/tv/on_the_air?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
+    return [
+        {
+            'id': show['id'],
+            'name': show['name'],
+            'first_air_date': show.get('first_air_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+        } for show in filtered_results[:max_shows]
+    ]
+
+def fetch_popular_shows(max_shows=18):
+    url = f"https://api.themoviedb.org/3/tv/popular?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
+    return [
+        {
+            'id': show['id'],
+            'name': show['name'],
+            'first_air_date': show.get('first_air_date', 'N/A'),
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+        } for show in filtered_results[:max_shows]
+    ]
+
+# Updated Index Route
+@app.route('/')
+def index():
+    now_playing = fetch_now_playing_movies()
+    popular = fetch_popular_movies()
+    upcoming = fetch_upcoming_movies()
+    airing_today = fetch_airing_today_shows()
+    on_the_air = fetch_on_the_air_shows()
+    popular_shows = fetch_popular_shows()
+    trending_people = fetch_trending_people()
+    return render_template(
+        'index.html',
+        now_playing=now_playing,
+        popular=popular,
+        upcoming=upcoming,
+        airing_today=airing_today,
+        on_the_air=on_the_air,
+        popular_shows=popular_shows,
+        trending_people=trending_people
+    )
+
+@app.route('/search', methods=['POST'])
+def search():
+    query = request.form.get('query')
+    if not query:
+        return render_template('index.html', error="Please enter a search term.")
+
+    # Search movies
+    movie_url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    movie_response = requests.get(movie_url)
+    movie_data = movie_response.json().get('results', [])
+
+    # Search TV shows
+    tv_url = f"https://api.themoviedb.org/3/search/tv?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    tv_response = requests.get(tv_url)
+    tv_data = tv_response.json().get('results', [])
+
+    # Search people
+    person_url = f"https://api.themoviedb.org/3/search/person?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    person_response = requests.get(person_url)
+    person_data = person_response.json().get('results', [])
+
+    # Format all results, filtering out items without images
+    movies = [
+        {
+            'id': m['id'],
+            'title': m['title'],
+            'release_date': m.get('release_date', 'N/A'),
+            'poster_path': m.get('poster_path')
+        } for m in movie_data if m.get('poster_path')
+    ]
+    shows = [
+        {
+            'id': s['id'],
+            'name': s['name'],
+            'first_air_date': s.get('first_air_date', 'N/A'),
+            'poster_path': s.get('poster_path')
+        } for s in tv_data if s.get('poster_path')
+    ]
+    people = [
+        {
+            'id': p['id'],
+            'name': p['name'],
+            'known_for': p.get('known_for_department', 'N/A'),
+            'profile_path': p.get('profile_path')
+        } for p in person_data if p.get('profile_path')
+    ]
+
+    return render_template('search_results.html', query=query, movies=movies, shows=shows, people=people)
+
+@app.route('/autocomplete')
+def autocomplete():
+    query = request.args.get('query', '')
+    if not query:
+        return jsonify({'movies': [], 'shows': [], 'people': []})
+
+    # Search movies
+    movie_url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    movie_response = requests.get(movie_url)
+    movie_data = movie_response.json().get('results', [])
+
+    # Search TV shows
+    tv_url = f"https://api.themoviedb.org/3/search/tv?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    tv_response = requests.get(tv_url)
+    tv_data = tv_response.json().get('results', [])
+
+    # Search people
+    person_url = f"https://api.themoviedb.org/3/search/person?api_key={TMDB_API_KEY}&language=en-US&query={query}&page=1"
+    person_response = requests.get(person_url)
+    person_data = person_response.json().get('results', [])
+
+    # Format results, filtering out items without images (limit 5 each)
+    movies = [{'id': m['id'], 'title': m['title'], 'release_date': m.get('release_date'), 'poster_path': m.get('poster_path')} 
+              for m in movie_data if m.get('poster_path')][:5]
+    shows = [{'id': s['id'], 'name': s['name'], 'first_air_date': s.get('first_air_date'), 'poster_path': s.get('poster_path')} 
+             for s in tv_data if s.get('poster_path')][:5]
+    people = [{'id': p['id'], 'name': p['name'], 'known_for': p.get('known_for_department'), 'profile_path': p.get('profile_path')} 
+              for p in person_data if p.get('profile_path')][:5]
+
+    return jsonify({'movies': movies, 'shows': shows, 'people': people})
+
+@app.route('/movies')
+def movies():
+    return render_template('movies.html', api_key=TMDB_API_KEY_2)
+
+@app.route('/tv_shows')
+def tv_shows():
+    return render_template('tv_shows.html', api_key=TMDB_API_KEY_2)
+
 # Helper function to fetch movies by genre
 def fetch_movies_by_genre(genre_id, max_movies=50):
     url = f"https://api.themoviedb.org/3/discover/movie?api_key={TMDB_API_KEY}&with_genres={genre_id}&sort_by=popularity.desc&page=1"
@@ -42,14 +257,6 @@ def fetch_shows_by_genre(genre_id, max_shows=50):
     response = requests.get(url)
     data = response.json()
     return data.get('results', [])[:max_shows]
-
-@app.route('/')
-def index():
-    return render_template('index.html', api_key=TMDB_API_KEY_2)
-
-@app.route('/tv_shows')
-def tv_shows():
-    return render_template('tv_shows.html', api_key=TMDB_API_KEY_2)
 
 @app.route('/genre/<genre_name>')
 def genre_page(genre_name):

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>Movie Recommender System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+            background: linear-gradient(-45deg, #1a1c2e, #2a2d4e, #3a3f6e, #2a2d4e);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 10;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+        }
+
+        .category-button {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .trending-slider {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .trending-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-link a {
+            position: relative;
+        }
+
+        .nav-link a::after {
+            content: '';
+    position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #4f46e5;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link a:hover::after {
+            width: 100%;
+        }
+
+#chatbot-button {
+            transition: all 0.3s ease;
+}
+
+#chatbot-button:hover {
+            transform: scale(1.1);
+        }
+
+        .trailer-card {
+            transition: all 0.3s ease;
+        }
+
+        .trailer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        #autocomplete-items {
+            z-index: 50;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white font-['Poppins']">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold gradient-text">MovieHub</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link hover:text-indigo-400 transition-colors">Home</a>
+                    <a href="/tv_shows" class="nav-link hover:text-indigo-400 transition-colors">TV Shows</a>
+                    <a href="/chat" class="nav-link hover:text-indigo-400 transition-colors">AI Chat</a>
+                </div>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 animate-gradient">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 animate__animated animate__fadeInDown gradient-text">
+                Discover Your Next Favorite Movie
+            </h1>
+            <p class="text-xl mb-12 animate__animated animate__fadeInUp text-indigo-200 float">
+                Get personalized recommendations powered by AI
+            </p>
+            
+            <!-- Search Bar -->
+            <div class="search-container animate__animated animate__fadeInUp">
+                <form action="/recommend" method="post" class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-grow">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="movie_name" id="movie_name" 
+                               class="search-input" placeholder="Search for movies...">
+                        <div id="autocomplete-items" class="absolute w-full mt-2 glass-effect rounded-lg hidden"></div>
+                    </div>
+                    <button type="submit" 
+                            class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105">
+                        Find Movies
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Trailers Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">Latest Trailers</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="featured-trailers">
+                <!-- Loading skeleton -->
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+                <div class="trailer-card glass-effect rounded-lg overflow-hidden loading h-64"></div>
+            </div>
+                </div>      
+    </section>
+
+    <!-- Trending Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8 text-center gradient-text">Trending Now</h2>
+            <div class="trending-slider flex overflow-x-auto gap-6 pb-8" id="trending-slider">
+                <!-- Loading skeleton -->
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+                <div class="movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden loading h-72"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center gradient-text">Browse by Category</h2>
+            
+            <!-- Top Categories -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 text-center text-indigo-200">Popular Categories</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Action Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Action</h4>
+                            <a href="/genre/action" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="action-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Comedy Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Comedy</h4>
+                            <a href="/genre/comedy" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="comedy-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Drama Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Drama</h4>
+                            <a href="/genre/drama" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="drama-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Romance Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Romance</h4>
+                            <a href="/genre/romance" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="romance-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+    </div>
+
+                    <!-- Thriller Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Thriller</h4>
+                            <a href="/genre/thriller" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="thriller-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+    </div>
+    
+                    <!-- Horror Category -->
+                    <div class="category-section glass-effect rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold">Horror</h4>
+                            <a href="/genre/horror" class="text-indigo-400 hover:text-indigo-300 text-sm">View All →</a>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4" id="horror-movies">
+                            <!-- Loading skeleton -->
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                            <div class="movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden loading h-48"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Button -->
+    <button id="chatbot-button" 
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg"
+            onclick="openChat()">
+        💬
+    </button>
+
+    <script>
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const API_KEY = '{{ api_key }}';
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchTrendingMovies();
+            fetchLatestTrailers();
+            setupMobileMenu();
+            fetchMoviesByGenres();
+        });
+
+        function setupMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-gray-900 glass-effect hidden';
+            mobileMenu.innerHTML = `
+                <div class="container mx-auto px-4 py-4">
+                    <div class="flex flex-col space-y-4">
+                        <a href="/" class="text-white hover:text-indigo-400">Home</a>
+                        <a href="/tv_shows" class="text-white hover:text-indigo-400">TV Shows</a>
+                        <a href="/chat" class="text-white hover:text-indigo-400">AI Chat</a>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(mobileMenu);
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    
+        function fetchTrendingMovies() {
+            fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`)
+            .then(response => response.json())
+            .then(data => {
+                const slider = document.getElementById("trending-slider");
+                slider.innerHTML = ''; // Clear loading skeletons
+                data.results.forEach(movie => {
+                    const posterUrl = movie.poster_path 
+                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+                        : "https://via.placeholder.com/500x750?text=No+Image";
+                    
+                    const movieCard = document.createElement("div");
+                    movieCard.className = "movie-card flex-shrink-0 w-48 glass-effect rounded-lg overflow-hidden";
+                    movieCard.innerHTML = `
+                        <a href="/movie/${movie.id}" class="block">
+                            <img src="${posterUrl}" alt="${movie.title}" class="w-full h-72 object-cover">
+                            <div class="p-4">
+                                <h3 class="font-semibold text-sm">${movie.title}</h3>
+                                <p class="text-gray-400 text-xs">${movie.release_date}</p>
+                            </div>
+                        </a>
+                    `;
+                    slider.appendChild(movieCard);
+                });
+            })
+            .catch(error => console.error("Error fetching trending movies:", error));
+        }
+
+        async function fetchLatestTrailers() {
+            try {
+    const upcomingUrl = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`;
+                const response = await fetch(upcomingUrl);
+                const data = await response.json();
+                
+                const movies = data.results.slice(0, 6); // Get first 6 upcoming movies
+        const trailerPromises = movies.map(movie => fetchMovieTrailer(movie.id));
+        const trailers = await Promise.all(trailerPromises);
+
+                const featuredTrailers = document.getElementById('featured-trailers');
+                featuredTrailers.innerHTML = ''; // Clear loading skeletons
+
+                movies.forEach((movie, index) => {
+                    if (trailers[index]) {
+                        const trailerCard = document.createElement('div');
+                        trailerCard.className = 'trailer-card glass-effect rounded-lg overflow-hidden';
+                        trailerCard.innerHTML = `
+                            <div class="aspect-w-16 aspect-h-9">
+                                <iframe src="${trailers[index]}" 
+                                        class="w-full h-64 rounded-lg"
+                                        allowFullscreen>
+                                </iframe>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg mb-2">${movie.title}</h3>
+                                <p class="text-gray-400 text-sm">${movie.release_date}</p>
+                            </div>
+                        `;
+                        featuredTrailers.appendChild(trailerCard);
+                    }
+                });
+    } catch (error) {
+                console.error("Error fetching latest trailers:", error);
+    }
+}
+
+async function fetchMovieTrailer(movieId) {
+    const url = `${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+                let trailer = data.results.find(video => 
+                    video.type === 'Trailer' && 
+                    video.site === "YouTube" && 
+                    video.official
+                );
+                
+        if (!trailer) {
+                    trailer = data.results.find(video => 
+                        video.type === 'Teaser' && 
+                        video.site === "YouTube"
+                    );
+        }
+                
+        if (!trailer) {
+            trailer = data.results.find(video => video.site === "YouTube");
+        }
+
+        return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+    } catch (error) {
+        console.error(`Error fetching trailer for movie ID ${movieId}:`, error);
+        return null;
+    }
+}
+
+        // Search functionality with modern styling
+        document.getElementById("movie_name").addEventListener("input", function() {
+            const input = this.value.toLowerCase();
+            const autocompleteContainer = document.getElementById("autocomplete-items");
+            autocompleteContainer.innerHTML = "";
+
+            if (input.length < 2) {
+                autocompleteContainer.style.display = "none";
+                return;
+            }
+
+            fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&query=${input}&page=1&include_adult=true`)
+            .then(response => response.json())
+            .then(data => {
+                data.results.forEach(movie => {
+                    const suggestion = document.createElement("div");
+                    const posterUrl = movie.poster_path 
+                        ? `https://image.tmdb.org/t/p/w92/${movie.poster_path}` 
+                        : "https://via.placeholder.com/92x138?text=No+Image";
+                    
+                    suggestion.className = "autocomplete-item flex items-center p-2 glass-effect";
+                    suggestion.innerHTML = `
+                        <img src="${posterUrl}" alt="Poster" class="w-12 h-18 object-cover rounded mr-3">
+                        <div>
+                            <div class="font-medium">${movie.title}</div>
+                            <div class="text-sm text-gray-400">${movie.release_date}</div>
+                        </div>
+                    `;
+                    
+                    suggestion.addEventListener("click", function() {
+                        document.getElementById("movie_name").value = movie.title;
+                        autocompleteContainer.style.display = "none";
+                    });
+                    
+                    autocompleteContainer.appendChild(suggestion);
+                });
+
+                autocompleteContainer.style.display = autocompleteContainer.children.length > 0 ? "block" : "none";
+            })
+            .catch(error => console.error("Error fetching movies:", error));
+        });
+
+        document.addEventListener("click", function(e) {
+            if (!e.target.matches("#movie_name")) {
+                document.getElementById("autocomplete-items").style.display = "none";
+            }
+        });
+
+        function openChat() {
+            window.location.href = "/chat";
+        }
+
+        // Add this new function to fetch movies by genres
+        async function fetchMoviesByGenres() {
+            const genres = {
+                'action': 28,
+                'comedy': 35,
+                'drama': 18,
+                'romance': 10749,
+                'thriller': 53,
+                'horror': 27
+            };
+
+            for (const [genre, id] of Object.entries(genres)) {
+                try {
+                    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${id}&sort_by=popularity.desc&page=1`);
+                    const data = await response.json();
+                    
+                    const container = document.getElementById(`${genre}-movies`);
+                    container.innerHTML = ''; // Clear loading skeletons
+                    
+                    data.results.slice(0, 5).forEach(movie => {
+                        const posterUrl = movie.poster_path 
+                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
+                            : "https://via.placeholder.com/500x750?text=No+Image";
+                        
+                        const movieCard = document.createElement("div");
+                        movieCard.className = "movie-card flex-shrink-0 w-32 glass-effect rounded-lg overflow-hidden";
+                        movieCard.innerHTML = `
+                            <a href="/movie/${movie.id}" class="block">
+                                <img src="${posterUrl}" alt="${movie.title}" class="w-full h-48 object-cover">
+                                <div class="p-2">
+                                    <h3 class="font-semibold text-xs truncate">${movie.title}</h3>
+                                    <p class="text-gray-400 text-xs">${movie.release_date}</p>
+                                </div>
+                            </a>
+                        `;
+                        container.appendChild(movieCard);
+                    });
+                } catch (error) {
+                    console.error(`Error fetching ${genre} movies:`, error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
