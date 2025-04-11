@@ -9,6 +9,7 @@ from langchain.prompts import PromptTemplate
 import json
 import re
 import hashlib  # For Gravatar hash
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -19,6 +20,7 @@ app.secret_key = os.getenv("SECRET_KEY")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_API_KEY_2 = os.getenv("TMDB_API_KEY_2")
 GROQ_API_KEY = os.getenv("groq_api_key")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 chatbot = ChatGroq(model_name="llama3-70b-8192", api_key=GROQ_API_KEY)
 
@@ -59,12 +61,22 @@ def fetch_popular_movies(max_movies=18):
         } for movie in filtered_results[:max_movies]
     ]
 
-def fetch_upcoming_movies(max_movies=18):
+def fetch_upcoming_movies(max_movies=18, exclude_ids=None, current_year=None):
+    if exclude_ids is None:
+        exclude_ids = set()
+    if current_year is None:
+        current_year = datetime.now().year  # 2025 as of April 11, 2025
+
     url = f"https://api.themoviedb.org/3/movie/upcoming?api_key={TMDB_API_KEY}&language=en-US&page=1"
     response = requests.get(url)
     data = response.json()
     results = data.get('results', [])
-    filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
+    filtered_results = [
+        movie for movie in results 
+        if movie.get('poster_path') and movie.get('title') and 
+           movie['id'] not in exclude_ids and  # Exclude movies from now_playing and popular
+           movie.get('release_date', '').startswith(str(current_year))  # Only current year
+    ]
     return [
         {
             'id': movie['id'],
@@ -89,7 +101,6 @@ def fetch_trending_people(time_window='week', max_people=18):
         } for person in filtered_results[:max_people]
     ]
 
-# New Helper Functions for TV Shows
 def fetch_airing_today_shows(max_shows=18):
     url = f"https://api.themoviedb.org/3/tv/airing_today?api_key={TMDB_API_KEY}&language=en-US&page=1"
     response = requests.get(url)
@@ -140,7 +151,9 @@ def fetch_popular_shows(max_shows=18):
 def index():
     now_playing = fetch_now_playing_movies()
     popular = fetch_popular_movies()
-    upcoming = fetch_upcoming_movies()
+    # Get IDs from now_playing and popular to exclude
+    exclude_ids = {movie['id'] for movie in now_playing + popular}
+    upcoming = fetch_upcoming_movies(exclude_ids=exclude_ids)
     airing_today = fetch_airing_today_shows()
     on_the_air = fetch_on_the_air_shows()
     popular_shows = fetch_popular_shows()
@@ -235,6 +248,34 @@ def autocomplete():
               for p in person_data if p.get('profile_path')][:5]
 
     return jsonify({'movies': movies, 'shows': shows, 'people': people})
+
+@app.route('/news')
+def news():
+    # NewsAPI call with refined query
+    news_url = (
+        f"https://newsapi.org/v2/everything?"
+        f"q=movies OR 'TV shows' OR 'movie actors' OR 'TV actors' OR actresses "
+        f"-sports -politics -business -tech "
+        f"&apiKey={NEWS_API_KEY}&language=en&sortBy=publishedAt&pageSize=50"
+    )
+    news_response = requests.get(news_url)
+    news_data = news_response.json()
+    articles = news_data.get('articles', [])
+    filtered_articles = [
+        {
+            'title': article['title'],
+            'description': article['description'] or 'No description available',
+            'url': article['url'],
+            'urlToImage': article['urlToImage'],
+            'publishedAt': article['publishedAt']
+        } for article in articles 
+        if article.get('title') and article.get('url') and article.get('urlToImage') and  # Require image
+           any(keyword in article['title'].lower() or keyword in (article['description'] or '').lower() 
+               for keyword in ['movie', 'tv', 'actor', 'actress', 'show', 'film', 'series', 'cinema', 
+                               'television', 'star', 'celebrity', 'director', 'producer', 'screenplay', 
+                               'premiere', 'release', 'cast', 'episode', 'season'])
+    ]
+    return render_template('news.html', articles=filtered_articles)
 
 @app.route('/movies')
 def movies():
