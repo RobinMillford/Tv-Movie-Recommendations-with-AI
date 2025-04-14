@@ -101,8 +101,8 @@ Tv-Movie-Recommendations/
 │   ├── tv_detail.html
 │   ├── actor_detail.html
 │   ├── error.html
-│   ├── movies.html  # New: Search results for movies, TV shows, people
-│   └── actor_detail.html  # New: Person details page
+│   ├── movies.html
+│   └── actor_detail.html
 └── static/
     └── styles.css  # Tailwind CSS and custom styles
 ```
