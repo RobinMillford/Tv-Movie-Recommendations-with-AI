@@ -1,34 +1,31 @@
 # Movie and TV Show Recommendation App With AI
 
-This is a Flask web application that allows users to get recommendations for movies and TV shows based on genres and specific titles. The application uses The Movie Database (TMDb) API to fetch movie and TV show data.
+This is a Flask web application that allows users to discover and get recommendations for movies, TV shows, and actors using The Movie Database (TMDb) API and an AI-powered chatbot driven by **LLaMA 3**. The app offers a modern, responsive interface and interactive features for an enhanced user experience.
 
 ## Features
 
 - Browse movies and TV shows by genre
-- Get recommendations for movies and TV shows based on a searched title
-- Display details and posters of movies and TV shows
-- **New Feature:** Integrated chatbot using **LLaMA 3** for interactive recommendations
-- **New Feature:** Automatically fetch **movie posters, names, and details** from TMDb based on chatbot recommendations
-- **New Feature:** Display fetched details alongside chatbot replies, with **clickable posters or movie names** leading to the TMDb page
-- **Complete UI Overhaul:** Redesigned the entire user interface using **Tailwind CSS** for a modern and responsive look
-- **New Pages:** Added dedicated pages for **movie details** and **TV show details** to enhance user experience
+- Search for movies, TV shows, and people (actors, directors, etc.)
+- Get personalized recommendations for movies and TV shows based on titles or preferences
+- Display detailed information, including posters, cast, and overviews
+- **New Feature:** Integrated **search page** for movies, TV shows, and people with real-time TMDb results
+- **New Feature:** Dedicated **person page** showcasing actor profiles, known works, and biographies
+- **New Feature:** AI chatbot powered by **LLaMA 3** for interactive recommendations and queries about movies, TV shows, and people
+- **New Feature:** Chatbot automatically fetches **posters, names, overviews, and details** from TMDb, with **clickable links** to TMDb pages
+- **New Feature:** Chatbot uses **movie/TV show overviews** to analyze themes (e.g., secrets, technology) for smarter recommendations
+- **Complete UI Overhaul:** Redesigned with **Tailwind CSS** for a modern, responsive look
+- **Dedicated Pages:** Enhanced pages for **movie details**, **TV show details**, and **person details**
 
 ## Live Demo
 
-Check out the live demo of the application deployed on Render [here](https://tv-movie-recommendations.onrender.com/).
+Check out the live demo deployed on Render [here](https://tv-movie-recommendations.onrender.com/).
 
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%201.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%202.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommender-System%201.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Details%20page.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Cinebot.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/chatapi.png)
-
 ![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Full%20system.png)
 
 ## Getting Started
@@ -36,12 +33,11 @@ Check out the live demo of the application deployed on Render [here](https://tv-
 ### Prerequisites
 
 - Python 3.7+
-- A TMDb API key. You can get one by creating an account on [The Movie Database](https://www.themoviedb.org/) and requesting an API key.
-- Groq API Key → Sign up at Groq API
+- A TMDb API key from [The Movie Database](https://www.themoviedb.org/)
+- A Groq API key from [Groq](https://groq.com/)
+- A NewsAPI key for entertainment news (optional, for `/news` page)
 
 ### Installation
-
-To set up the project locally, follow these steps:
 
 1. Clone the repository:
 
@@ -50,36 +46,38 @@ To set up the project locally, follow these steps:
    cd Tv-Movie-Recommendations
    ```
 
-2. Create a virtual environment and activate it:
+2. Create and activate a virtual environment:
 
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install the required packages:
+3. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the root directory and add your API keys:
+4. Create a `.env` file in the root directory with your API keys:
 
    ```env
-   SECRET_KEY=your secret key
+   SECRET_KEY=your_secret_key
    TMDB_API_KEY=your_tmdb_api_key
+   TMDB_API_KEY_2=your_tmdb_api_key_2
    GROQ_API_KEY=your_groq_api_key
+   NEWS_API_KEY=your_newsapi_key
    ```
 
 ### Running the Application
 
-1. Run the Flask application:
+1. Start the Flask app:
 
    ```bash
    python app.py
    ```
 
-2. Open your web browser and go to `http://127.0.0.1:5000` to view the app.
+2. Open `http://127.0.0.1:5000` in your browser.
 
 ## Folder Structure
 
@@ -98,60 +96,72 @@ Tv-Movie-Recommendations/
 │   ├── no_results.html
 │   ├── tv_genre.html
 │   ├── tv_recommend.html
-│   ├── chat.html  # New: Chat interface for movie recommendations
-│   ├── movie_detail.html  # New: Enhanced movie details display
-│   ├── tv_detail.html  # New: Enhanced TV show details display
-│   ├── actor_detail.html  # New: Actor details display
-│   └── error.html  # New: Error message display
+│   ├── chat.html
+│   ├── movie_detail.html
+│   ├── tv_detail.html
+│   ├── actor_detail.html
+│   ├── error.html
+│   ├── movies.html  # New: Search results for movies, TV shows, people
+│   └── actor_detail.html  # New: Person details page
 └── static/
-    └── styles.css  # New: Custom styles for improved UI
+    └── styles.css  # Tailwind CSS and custom styles
 ```
 
 ## New Updates
 
-### 🔹 **Added Chatbot Integration**
+### 🔹 **Search Page for Movies, TV Shows, and People**
 
-- Integrated **Groq API with LLaMA 3** for a more interactive and intelligent movie recommendation system.
-- Users can now **chat with the bot** to get personalized recommendations.
+- Added a **search page** (`/search`) allowing users to query movies, TV shows, and people in one place.
+- Uses TMDb’s multi-search API for real-time results.
+- Displays posters, titles, and brief details with links to respective detail pages.
 
-### 🔹 **Enhanced Movie and TV Show Details Display**
+### 🔹 **Person Details Page**
 
-- When the chatbot recommends a movie or TV show, it automatically fetches **posters, names, and details** from TMDb.
-- **Posters and names are clickable**, leading to the TMDb page for more information.
-- Improved layout for the hero section, ensuring all content fits properly without overlap.
+- Introduced a **person page** (`/person/<id>`) for actors, directors, etc.
+- Shows biography, known works, and profile images from TMDb.
+- Links to related movies and TV shows for deeper exploration.
 
-### 🔹 **Complete UI Overhaul**
+### 🔹 **Enhanced Chatbot**
 
-- Redesigned the entire user interface using **Tailwind CSS** for a modern and responsive look.
-- Enhanced user experience with a more intuitive layout and design.
+- Upgraded chatbot with **LLaMA 3** via Groq API to handle queries about movies, TV shows, and people (e.g., “Who is Sophie Thatcher?”).
+- Analyzes **movie/TV show overviews** to extract themes (e.g., deception, technology) for precise recommendations.
+- Fetches **posters, names, overviews, and details** from TMDb, with **clickable links** to TMDb pages.
+- Supports ambiguous queries by prompting for clarification (e.g., movie name and year).
 
-### 🔹 **Improved User Experience**
+### 🔹 **Improved UI and UX**
 
-- Movie and TV show details now appear **alongside the chatbot's responses** for a more seamless experience.
-- Optimized API calls to ensure faster loading times.
-- Added functionality to show full cast and reviews with toggle buttons for better content management.
+- Modernized interface with **Tailwind CSS** for responsiveness.
+- Enhanced **movie**, **TV show**, and **person detail pages** with toggleable cast and reviews.
+- Optimized API calls for faster load times.
+- Chatbot responses display alongside fetched media details for seamless interaction.
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests.
+Submit issues or enhancement requests via GitHub. Pull requests are welcome!
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgements
 
-- This application uses the [TMDb API](https://www.themoviedb.org/documentation/api) but is not endorsed or certified by TMDb.
+- Uses [TMDb API](https://www.themoviedb.org/documentation/api) (not endorsed by TMDb).
+- Powered by [Groq](https://groq.com/) for AI chatbot functionality.
+- Styled with [Tailwind CSS](https://tailwindcss.com/).
 
-### How to Use the Deployed Application
+## How to Use the Deployed Application
 
-1. **Access the Application:**  
-   Visit the live demo [here](https://tv-movie-recommendations.onrender.com/).
+1. **Access the App:**  
+   Visit [https://tv-movie-recommendations.onrender.com/](https://tv-movie-recommendations.onrender.com/).
 
-2. **Browse by Genre:**
+2. **Browse by Genre:**  
+   Explore movies or TV shows by genre via dedicated pages.
 
-   - Navigate to the genre pages to see movies or TV shows listed by genre.
+3. **Search Content:**  
+   Use the search bar to find movies, TV shows, or people, with results linking to detail pages.
 
-3. **Get Recommendations:**
-   - Use the chatbot to ask for movie or TV show recommendations based on your preferences.
-   - Click on the movie posters or names to visit their TMDb page for more details.
+4. **Get Recommendations:**  
+   Chat with the AI bot to get tailored movie, TV show, or actor info. Click posters/names for TMDb details.
+
+5. **View Details:**  
+   Check out movie, TV show, or person pages for in-depth information.
