@@ -16,17 +16,29 @@ This is a Flask web application that allows users to discover and get recommenda
 - **Complete UI Overhaul:** Redesigned with **Tailwind CSS** for a modern, responsive look
 - **Dedicated Pages:** Enhanced pages for **movie details**, **TV show details**, and **person details**
 
+## How it's working
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/chatbot_Diagram.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/Website_arch.png)
+
 ## Live Demo
 
 Check out the live demo deployed on Render [here](https://tv-movie-recommendations.onrender.com/).
 
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%201.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Movie-Recommender-System%202.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/TV-Show-Recommender-System%201.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Details%20page.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Cinebot.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/chatapi.png)
-![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/blob/main/Full%20system.png)
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/images/MovieTvHub-Discover-Movies-Shows-People-04-16-2025_11_22_PM.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/Movie-Recommender-System%201.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/Movie-Recommender-System%202.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/TV-Show-Recommender-System%201.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/Details%20page.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/images/Tom-Cruise-ActorHub-04-16-2025_11_25_PM.png)
+
+![Alt Text](https://github.com/RobinMillford/Tv-Movie-Recommendations/images/blob/main/Cinebot.png)
 
 ## Getting Started
 
