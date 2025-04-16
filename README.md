@@ -113,8 +113,8 @@ Tv-Movie-Recommendations/
 │   ├── tv_detail.html
 │   ├── actor_detail.html
 │   ├── error.html
-│   ├── movies.html  # New: Search results for movies, TV shows, people
-│   └── actor_detail.html  # New: Person details page
+│   ├── movies.html
+│ 
 └── static/
     └── styles.css  # Tailwind CSS and custom styles
 ```
@@ -123,13 +123,13 @@ Tv-Movie-Recommendations/
 
 ### 🔹 **Search Page for Movies, TV Shows, and People**
 
-- Added a **search page** (`/search`) allowing users to query movies, TV shows, and people in one place.
+- Added a **index page** (`/`) allowing users to query movies, TV shows, and people in one place.
 - Uses TMDb’s multi-search API for real-time results.
 - Displays posters, titles, and brief details with links to respective detail pages.
 
 ### 🔹 **Person Details Page**
 
-- Introduced a **person page** (`/person/<id>`) for actors, directors, etc.
+- Introduced a **person page** (`/actor/<id>`) for actors, directors, etc.
 - Shows biography, known works, and profile images from TMDb.
 - Links to related movies and TV shows for deeper exploration.
 
