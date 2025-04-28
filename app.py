@@ -148,9 +148,24 @@ def fetch_popular_shows(max_shows=18):
         } for show in filtered_results[:max_shows]
     ]
 
+def fetch_trending_movies(max_movies=5):
+    url = f"https://api.themoviedb.org/3/trending/movie/day?api_key={TMDB_API_KEY}"
+    response = requests.get(url)
+    data = response.json()
+    results = data.get('results', [])
+    filtered_results = [movie for movie in results if movie.get('backdrop_path')]
+    return [
+        {
+            'id': movie['id'],
+            'title': movie['title'],
+            'backdrop_path': f"https://image.tmdb.org/t/p/original{movie['backdrop_path']}"
+        } for movie in filtered_results[:max_movies]
+    ]
+
 # Updated Index Route
 @app.route('/')
 def index():
+    trending_backdrops = fetch_trending_movies()
     now_playing = fetch_now_playing_movies()
     popular = fetch_popular_movies()
     # Get IDs from now_playing and popular to exclude
@@ -162,6 +177,7 @@ def index():
     trending_people = fetch_trending_people()
     return render_template(
         'index.html',
+        trending_backdrops=trending_backdrops,
         now_playing=now_playing,
         popular=popular,
         upcoming=upcoming,

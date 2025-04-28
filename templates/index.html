@@ -80,9 +80,9 @@
             width: 100%;
             height: 100%;
             background-size: cover;
-            background-position: center;
-            filter: blur(8px);
-            transform: scale(1.1);
+            background-position: center top;
+            filter: blur(3px);
+            transform: scale(1.03);
             z-index: -2;
         }
 
@@ -174,7 +174,7 @@
 
     <!-- Hero Section with Search -->
     <section class="hero-section">
-        <div class="hero-backdrop" style="background-image: url('https://image.tmdb.org/t/p/original/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg');"></div>
+        <div class="hero-backdrop" id="dynamic-hero-backdrop" style="background-image: url('{% if trending_backdrops %}{{ trending_backdrops[0].backdrop_path }}{% else %}https://image.tmdb.org/t/p/original/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg{% endif %}');"></div>
         <div class="hero-overlay"></div>
         <div class="container mx-auto px-4 flex items-center justify-center h-full">
             <div class="text-center">
@@ -340,6 +340,32 @@
             mobileMenuButton.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
             });
+
+            // Trending backdrops rotation (using server-provided data)
+            const trendingBackdrops = [
+                {% for backdrop in trending_backdrops %}
+                "{{ backdrop.backdrop_path }}",
+                {% endfor %}
+            ];
+
+            let currentBackdropIndex = 0;
+            const heroBackdrop = document.getElementById('dynamic-hero-backdrop');
+
+            function rotateBackdropImage() {
+                if (trendingBackdrops.length > 1) {
+                    currentBackdropIndex = (currentBackdropIndex + 1) % trendingBackdrops.length;
+                    const nextImage = new Image();
+                    nextImage.onload = function() {
+                        heroBackdrop.style.backgroundImage = `url('${trendingBackdrops[currentBackdropIndex]}')`;
+                    };
+                    nextImage.src = trendingBackdrops[currentBackdropIndex];
+                }
+            }
+            
+            // Change backdrop every 8 seconds if we have multiple backdrops
+            if (trendingBackdrops.length > 1) {
+                setInterval(rotateBackdropImage, 8000);
+            }
 
             // Autocomplete
             const searchInput = document.getElementById('search-input');
