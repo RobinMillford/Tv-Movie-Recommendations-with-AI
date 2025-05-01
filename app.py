@@ -22,7 +22,36 @@ TMDB_API_KEY_2 = os.getenv("TMDB_API_KEY_2")
 GROQ_API_KEY = os.getenv("groq_api_key")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
-chatbot = ChatGroq(model_name="llama3-70b-8192", api_key=GROQ_API_KEY)
+# Default model
+DEFAULT_MODEL = "llama3-70b-8192"
+
+# Dictionary to store model-specific chatbots
+model_chatbots = {}
+
+def get_chatbot(model_name=DEFAULT_MODEL):
+    """Get or create a chatbot instance for the specified model"""
+    # Try to use the requested model, fall back to default if there's an issue
+    try:
+        if model_name not in model_chatbots:
+            model_chatbots[model_name] = ChatGroq(model_name=model_name, api_key=GROQ_API_KEY)
+        return model_chatbots[model_name]
+    except Exception as e:
+        print(f"Error initializing model {model_name}: {e}")
+        # If the requested model is already the default, try llama3-8b-8192 as ultimate fallback
+        if model_name == DEFAULT_MODEL:
+            fallback_model = "llama3-8b-8192"
+            print(f"Default model failed, trying fallback model: {fallback_model}")
+            if fallback_model not in model_chatbots:
+                model_chatbots[fallback_model] = ChatGroq(model_name=fallback_model, api_key=GROQ_API_KEY)
+            return model_chatbots[fallback_model]
+        # Otherwise fall back to the default model
+        print(f"Falling back to default model: {DEFAULT_MODEL}")
+        if DEFAULT_MODEL not in model_chatbots:
+            model_chatbots[DEFAULT_MODEL] = ChatGroq(model_name=DEFAULT_MODEL, api_key=GROQ_API_KEY)
+        return model_chatbots[DEFAULT_MODEL]
+
+# Initialize default chatbot
+chatbot = get_chatbot(DEFAULT_MODEL)
 
 prompt_template = PromptTemplate(
     input_variables=["chat_history", "user_input"],
@@ -440,17 +469,27 @@ def fetch_tmdb_recommendations(id, is_movie=True, max_recommendations=50):
     data = response.json()
     return data.get('results', [])[:max_recommendations]
 
+@app.route("/model_selection")
+def model_selection():
+    """Route to display the model selection page"""
+    return render_template("model_selection.html")
+
 @app.route("/chat")
 def chat():
+    # Get the model name from the query parameter, or use default
+    model_name = request.args.get("model", DEFAULT_MODEL)
+    
     # Clear session history for this user on page load
     session_id = request.remote_addr
     if session_id in chat_sessions:
         del chat_sessions[session_id]
-    return render_template("chat.html")
+        
+    return render_template("chat.html", model=model_name)
 
 @app.route("/chat_api", methods=["POST"])
 def chat_api():
     user_message = request.json.get("message")
+    model_name = request.json.get("model", DEFAULT_MODEL)
     if not user_message:
         return jsonify({"error": "Message is required"}), 400
 
@@ -458,6 +497,9 @@ def chat_api():
     if session_id not in chat_sessions:
         chat_sessions[session_id] = []
 
+    # Use the chatbot for the specified model
+    current_chatbot = get_chatbot(model_name)
+    
     # Check if awaiting clarification
     is_awaiting_clarification = any(
         msg.get("type") == "ai" and "please provide the movie's true name and release year" in msg.get("content", "").lower()
@@ -578,7 +620,7 @@ def chat_api():
                 ]
             }}
             """
-            rec_response = chatbot.invoke(recommendation_prompt)
+            rec_response = get_chatbot(model_name).invoke(recommendation_prompt)
             try:
                 rec_data = json.loads(rec_response.content)
                 recommendations = rec_data.get("recommendations", [])
@@ -652,7 +694,7 @@ def chat_api():
     **Chatbot Response to Analyze:**
     "{bot_reply}"
     """
-    uncertainty_response = chatbot.invoke(uncertainty_prompt)
+    uncertainty_response = get_chatbot(model_name).invoke(uncertainty_prompt)
     try:
         uncertainty_data = json.loads(uncertainty_response.content)
         is_uncertain = uncertainty_data.get("is_uncertain", False)
@@ -697,9 +739,11 @@ def chat_api():
     **Chatbot Response to Process:**
     "{bot_reply}"
     """
-    analysis_response = chatbot.invoke(llm_prompt)
+    analysis_response = get_chatbot(model_name).invoke(llm_prompt)
     try:
-        analysis_data = json.loads(analysis_response.content)
+        # Clean the JSON response by removing any markdown code block syntax
+        cleaned_content = clean_json_response(analysis_response.content)
+        analysis_data = json.loads(cleaned_content)
         movie_data = analysis_data.get("movies", [])
         tv_show_data = analysis_data.get("tv_shows", [])
     except json.JSONDecodeError:
@@ -1123,6 +1167,33 @@ def format_currency(amount):
     if not amount:
         return "N/A"
     return f"{amount:,}"
+
+def clean_json_response(content):
+    """Clean JSON content from markdown code blocks and other formatting"""
+    # Check for <think> tags and extract any JSON found within
+    if "<think>" in content and "</think>" in content:
+        # Try to find JSON within the think tags
+        think_content = content.split("</think>")[-1].strip()
+        if think_content.startswith("```json") or think_content.startswith("```"):
+            content = think_content
+        elif "{" in think_content and "}" in think_content:
+            # Extract just the JSON part
+            json_start = think_content.find("{")
+            json_end = think_content.rfind("}") + 1
+            if json_start >= 0 and json_end > json_start:
+                content = think_content[json_start:json_end]
+    
+    # Remove markdown code block syntax if present
+    if content.startswith("```") and content.endswith("```"):
+        # Remove the first and last line (code block markers)
+        content = "\n".join(content.split("\n")[1:-1])
+    elif content.startswith("```json") and content.endswith("```"):
+        content = "\n".join(content.split("\n")[1:-1])
+    
+    # For cases where just the pattern ```json or ``` is present without proper formatting
+    content = content.strip().replace("```json", "").replace("```", "").strip()
+    
+    return content
 
 @app.route('/movie/<int:movie_id>')
 def movie_detail(movie_id):

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon3.ico') }}">
-    <title>MovieHub AI Chat</title>
+    <title>MovieHub AI Chat - {{ model }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -356,6 +356,7 @@
         const userInput = document.getElementById("user-input");
         const sendButton = document.getElementById("send-button");
         const BOT_NAME = "CineBot";
+        const modelName = "{{ model }}"; // Get model name from Flask template
 
         function addMessage(sender, text) {
             const messageElement = document.createElement("div");
@@ -400,7 +401,10 @@
                 const response = await fetch("/chat_api", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: userMessage })
+                    body: JSON.stringify({ 
+                        message: userMessage,
+                        model: modelName // Include the model parameter
+                    })
                 });
 
                 if (!response.ok) {
