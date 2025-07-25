@@ -1,4 +1,4 @@
-# Movie and TV Show Recommendation App With AI
+# ReelSense AI: Intelligent Media Discovery & Recommendation
 
 This is a Flask web application that allows users to discover and get recommendations for movies, TV shows, and actors using The Movie Database (TMDb) API and an AI-powered chatbot driven by **LLaMA 3**. The app offers a modern, responsive interface and interactive features for an enhanced user experience.
 
