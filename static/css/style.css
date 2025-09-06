@@ -200,6 +200,32 @@
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
 }
 
+/* Floating Chat Button (specifically for index page) */
+#chatbot-button {
+    background: linear-gradient(45deg, #FF6F61, #00C4CC); /* Using the site's color scheme */
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 40;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#chatbot-button:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+#chatbot-button svg {
+    width: 24px;
+    height: 24px;
+}
+
 /* Loading Animation */
 .loading {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

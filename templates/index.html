@@ -161,7 +161,12 @@
                     <a href="/movies" class="nav-link transition-colors">Movies</a>
                     <a href="/tv_shows" class="nav-link transition-colors">TV Shows</a>
                     <a href="/news" class="nav-link transition-colors">News</a>
-                    <a href="/model_selection" class="nav-link transition-colors">AI Chat</a>
+                    <a href="/model_selection" class="nav-link transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        AI Chat
+                    </a>
                 </div>
                 <button class="md:hidden" id="mobile-menu-button">
                     <svg class="w-6 h-6" fill="none" stroke="#F5F6F5" viewBox="0 0 24 24">
@@ -191,14 +196,6 @@
                         <div id="autocomplete-items" class="absolute w-full left-0 top-full mt-2 glass-effect rounded-lg hidden max-h-96 overflow-y-auto"></div>
                     </div>
                 </form>
-                <div class="flex items-center justify-center mt-6">
-                    <a href="/model_selection" class="flex items-center justify-center px-6 py-3.5 text-lg font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-md hover:from-indigo-700 hover:to-purple-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Chat with CineBot
-                    </a>
-                </div>
             </div>
         </div>
     </section>
@@ -339,7 +336,15 @@
                 <div class="container mx-auto px-4 py-4">
                     <div class="flex flex-col space-y-4">
                         <a href="/" class="text-[#F5F6F5] hover:text-[#00C4CC]">Home</a>
+                        <a href="/movies" class="text-[#F5F6F5] hover:text-[#00C4CC]">Movies</a>
                         <a href="/tv_shows" class="text-[#F5F6F5] hover:text-[#00C4CC]">TV Shows</a>
+                        <a href="/news" class="text-[#F5F6F5] hover:text-[#00C4CC]">News</a>
+                        <a href="/model_selection" class="text-[#F5F6F5] hover:text-[#00C4CC] flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            AI Chat
+                        </a>
                     </div>
                 </div>
             `;
@@ -349,12 +354,22 @@
                 mobileMenu.classList.toggle('hidden');
             });
 
+            // Add floating chat button
+            const chatButton = document.createElement('a');
+            chatButton.href = '/model_selection';
+            chatButton.id = 'chatbot-button';
+            chatButton.className = 'fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg z-40 transition-all duration-300 hover:scale-110';
+            chatButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            `;
+            document.body.appendChild(chatButton);
+
             // Trending backdrops rotation (using server-provided data)
-            const trendingBackdrops = [
-                {% for backdrop in trending_backdrops %}
-                "{{ backdrop.backdrop_path }}",
-                {% endfor %}
-            ];
+            // Note: This is handled by the server-side template, but we need to handle it in JavaScript
+            const trendingBackdrops = []; // This will be populated by the server
+            // The server will render the backdrop paths directly in the HTML
 
             let currentBackdropIndex = 0;
             const heroBackdrop = document.getElementById('dynamic-hero-backdrop');
