@@ -285,10 +285,6 @@
             min-height: 2.8em;
         }
 
-        /* Remove unused styles */
-        .media-details, .media-rating, .media-date {
-            display: none;
-        }
 
         /* Responsive Fixes */
         @media (max-width: 640px) {
@@ -453,10 +449,13 @@
                 const mediaElement = document.createElement("div");
                 mediaElement.classList.add("media");
 
+                // Add release status badge if it exists
+                const releaseStatus = item.release_status || "";
+                
                 mediaElement.innerHTML = `
                     <a href="${item.tmdb_link}">
                         <img src="${item.poster_url}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="media-title-text">${item.title}</div>
+                        <div class="media-title-text">${item.title} (${item.year})${releaseStatus}</div>
                     </a>
                 `;
                 itemsContainer.appendChild(mediaElement);

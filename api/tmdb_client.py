@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 import hashlib
+from functools import lru_cache
 
 # Load environment variables
 load_dotenv()
@@ -11,10 +12,37 @@ load_dotenv()
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_API_KEY_2 = os.getenv("TMDB_API_KEY_2")
 
-def fetch_now_playing_movies(max_movies=18):
-    url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
+# Simple in-memory cache for TMDB data
+tmdb_cache = {}
+
+def get_cache_key(*args):
+    """Generate a cache key from arguments"""
+    return hashlib.md5(str(args).encode()).hexdigest()
+
+def cached_tmdb_request(url, max_age=3600):
+    """Make a TMDB request with caching"""
+    cache_key = get_cache_key(url)
+    current_time = time.time()
+    
+    # Check if we have a cached response that's still valid
+    if cache_key in tmdb_cache:
+        cached_data, timestamp = tmdb_cache[cache_key]
+        if current_time - timestamp < max_age:
+            print(f"Cache hit for {url}")
+            return cached_data
+    
+    # Make the request
+    print(f"Making request to {url}")
     response = requests.get(url)
     data = response.json()
+    
+    # Cache the response
+    tmdb_cache[cache_key] = (data, current_time)
+    return data
+
+def fetch_now_playing_movies(max_movies=18):
+    url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}&language=en-US&page=1"
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
     return [
@@ -28,8 +56,7 @@ def fetch_now_playing_movies(max_movies=18):
 
 def fetch_popular_movies(max_movies=18):
     url = f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB_API_KEY}&language=en-US&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [movie for movie in results if movie.get('poster_path') and movie.get('title')]
     return [
@@ -48,8 +75,7 @@ def fetch_upcoming_movies(max_movies=18, exclude_ids=None, current_year=None):
         current_year = datetime.now().year
 
     url = f"https://api.themoviedb.org/3/movie/upcoming?api_key={TMDB_API_KEY}&language=en-US&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [
         movie for movie in results 
@@ -68,8 +94,7 @@ def fetch_upcoming_movies(max_movies=18, exclude_ids=None, current_year=None):
 
 def fetch_trending_people(time_window='week', max_people=18):
     url = f"https://api.themoviedb.org/3/trending/person/{time_window}?api_key={TMDB_API_KEY}"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [person for person in results if person.get('profile_path') and person.get('name')]
     return [
@@ -83,8 +108,7 @@ def fetch_trending_people(time_window='week', max_people=18):
 
 def fetch_airing_today_shows(max_shows=18):
     url = f"https://api.themoviedb.org/3/tv/airing_today?api_key={TMDB_API_KEY}&language=en-US&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
     return [
@@ -98,8 +122,7 @@ def fetch_airing_today_shows(max_shows=18):
 
 def fetch_on_the_air_shows(max_shows=18):
     url = f"https://api.themoviedb.org/3/tv/on_the_air?api_key={TMDB_API_KEY}&language=en-US&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
     return [
@@ -113,8 +136,7 @@ def fetch_on_the_air_shows(max_shows=18):
 
 def fetch_popular_shows(max_shows=18):
     url = f"https://api.themoviedb.org/3/tv/popular?api_key={TMDB_API_KEY}&language=en-US&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [show for show in results if show.get('poster_path') and show.get('name')]
     return [
@@ -128,8 +150,7 @@ def fetch_popular_shows(max_shows=18):
 
 def fetch_trending_movies(max_movies=5):
     url = f"https://api.themoviedb.org/3/trending/movie/day?api_key={TMDB_API_KEY}"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     results = data.get('results', [])
     filtered_results = [movie for movie in results if movie.get('backdrop_path')]
     return [
@@ -142,14 +163,12 @@ def fetch_trending_movies(max_movies=5):
 
 def fetch_movies_by_genre(genre_id, max_movies=50):
     url = f"https://api.themoviedb.org/3/discover/movie?api_key={TMDB_API_KEY}&with_genres={genre_id}&sort_by=popularity.desc&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     return data.get('results', [])[:max_movies]
 
 def fetch_shows_by_genre(genre_id, max_shows=50):
     url = f"https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&with_genres={genre_id}&sort_by=popularity.desc&page=1"
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     return data.get('results', [])[:max_shows]
 
 def fetch_poster(id, is_movie=True, max_retries=3, retry_delay=2):
@@ -172,8 +191,7 @@ def fetch_tmdb_recommendations(id, is_movie=True, max_recommendations=50):
     media_type = "movie" if is_movie else "tv"
     url = f"https://api.themoviedb.org/3/{media_type}/{id}/recommendations?api_key={TMDB_API_KEY}&language=en-US&page=1"
     time.sleep(1)
-    response = requests.get(url)
-    data = response.json()
+    data = cached_tmdb_request(url)
     return data.get('results', [])[:max_recommendations]
 
 def fetch_movie_details(movie_id, max_retries=3, retry_delay=2):

@@ -1,14 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify
 import requests
-import time
 import os
-from api.chatbot import get_chatbot, conversation_chain, clean_json_response
-from api.tmdb_client import fetch_poster
+from api.chatbot import get_chatbot, clean_json_response, is_recent_release, is_upcoming_release, is_safety_model_response, extract_media_with_llm
 from langchain.schema import AIMessage, HumanMessage
 import json
-
-# Get environment variables
-TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+from datetime import datetime
+import re
 
 chat = Blueprint('chat', __name__)
 
@@ -67,10 +64,25 @@ def chat_api():
 
             year = parts[-1]
             title = ' '.join(parts[:-1])
-            # Search TMDb
-            search_url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={title}&year={year}&include_adult=true"
+            # Search TMDb with more flexible approach for new releases
+            search_url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={title}&include_adult=true"
             search_response = requests.get(search_url).json()
             results = search_response.get("results", [])
+
+            # Filter results by year if provided
+            if year and results:
+                results = [movie for movie in results if movie.get('release_date', '').startswith(year)]
+            
+            # If no results found with exact year match, try broader search
+            if not results:
+                # Try without year constraint but with include_video=true for newer releases
+                search_url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={title}&include_adult=true&include_video=true"
+                search_response = requests.get(search_url).json()
+                results = search_response.get("results", [])
+                
+                # Filter by year again if provided
+                if year and results:
+                    results = [movie for movie in results if movie.get('release_date', '').startswith(year)]
 
             if not results:
                 bot_reply = f"No movies found for '{title}' in {year}. Could you clarify the title or try another year?"
@@ -100,7 +112,8 @@ def chat_api():
 
             # Extract details with robust error handling
             title = details_response.get('title', 'Unknown')
-            release_year = details_response.get('release_date', 'Unknown')[:4] if details_response.get('release_date') else 'Unknown'
+            release_date = details_response.get('release_date', 'Unknown')
+            release_year = release_date[:4] if release_date != 'Unknown' else 'Unknown'
             overview = details_response.get('overview', 'No description available')
             genres = [genre['name'] for genre in details_response.get('genres', [])] or ['Unknown']
             cast = [
@@ -128,6 +141,15 @@ def chat_api():
                         rating = release['certification']
                         break
 
+            # Check if this is a recent or upcoming release
+            is_recent = is_recent_release(release_date)
+            is_upcoming = is_upcoming_release(release_date)
+            release_status = ""
+            if is_upcoming:
+                release_status = " (UPCOMING RELEASE)"
+            elif is_recent:
+                release_status = " (RECENT RELEASE)"
+
             # Store movie data
             movie_data = [{
                 "title": title,
@@ -149,7 +171,7 @@ def chat_api():
 
             **Movie Details:**
             - Title: {title}
-            - Year: {release_year}
+            - Year: {release_year}{release_status}
             - Genres: {', '.join(genres)}
             - Director: {director}
             - Cast: {', '.join(member['name'] for member in cast)}
@@ -175,7 +197,7 @@ def chat_api():
                 recommendations = []
 
             bot_reply = (
-                f"Found '{title}' ({release_year}).\n"
+                f"Found '{title}' ({release_year}){release_status}.\n"
                 f"Overview: {overview}\n"
                 f"Genres: {', '.join(genres)}\n"
                 f"Director: {director}\n"
@@ -215,25 +237,48 @@ def chat_api():
             ]
             return jsonify({"reply": bot_reply})
 
-    # Normal chat flow
+    # Normal chat flow with enhanced media detection for new releases
     chat_history_str = "\n".join(
         f"{'User' if isinstance(msg, HumanMessage) else 'Assistant'}: {msg.content}"
         for msg in formatted_history[:-1]
     )
-    bot_response = conversation_chain.invoke({
-        "chat_history": chat_history_str,
-        "user_input": user_message
-    })
+    
+    # Enhanced prompt to better handle new releases and different media types
+    enhanced_prompt = f"""
+    You are a helpful movie and TV show recommendation assistant. You have access to The Movie Database (TMDB) which contains information about movies, TV shows, and anime including recent and upcoming releases.
+    
+    When users ask about movies or shows, especially recent ones, respond with accurate information. For newer releases that might not be widely known, provide details based on the information you have and mention that it's a recent release.
+    
+    Conversation so far:
+    {chat_history_str}
+    
+    User: {user_message}
+    
+    Assistant:
+    """
+    
+    bot_response = get_chatbot(model_name).invoke(enhanced_prompt)
     bot_reply = bot_response.content.strip()
 
     if not bot_reply:
         return jsonify({"error": "Bot response is empty. Please try again."}), 500
 
-    # Check for uncertainty
+    # Special handling for the safety-focused model (Llama Guard)
+    if is_safety_model_response(bot_reply, model_name):
+        # Fallback to a more capable model for complex queries
+        fallback_model = "llama-3.3-70b-versatile"
+        bot_response = get_chatbot(fallback_model).invoke(enhanced_prompt)
+        bot_reply = bot_response.content.strip()
+        print(f"Fallback to {fallback_model} due to safety model response")
+        # Update model_name for subsequent operations
+        model_name = fallback_model
+
+    # Check for uncertainty with improved detection for new releases
     uncertainty_prompt = f"""
-    You are an expert text analyzer. Your task is to determine if the chatbot response indicates uncertainty or confusion about a movie.
+    You are an expert text analyzer. Your task is to determine if the chatbot response indicates uncertainty or confusion about a movie or TV show.
     **Instructions:**
     - Look for phrases like "I'm not sure," "maybe," "guessing," "I don't know," "could be," or lack of specific movie details.
+    - However, if the response is about a very recent or upcoming release, don't flag it as uncertain just because the LLM has limited knowledge about it.
     - Return valid JSON with a single key "is_uncertain" set to true or false.
     **Example JSON Format:**
     {{"is_uncertain": true}}
@@ -246,11 +291,16 @@ def chat_api():
         is_uncertain = uncertainty_data.get("is_uncertain", False)
     except json.JSONDecodeError:
         print(f"Invalid JSON from uncertainty analysis: {uncertainty_response.content}")
-        is_uncertain = False
+        # If we can't parse the JSON, check if it's the safety model response
+        if is_safety_model_response(uncertainty_response.content, model_name):
+            is_uncertain = False
+        else:
+            is_uncertain = False
 
-    if is_uncertain:
+    # Only ask for clarification if we're truly uncertain (not just about new releases)
+    if is_uncertain and "2025" not in user_message and "recent" not in user_message.lower():
         bot_reply = (
-            "I'm not confident about that movie. Could you please provide the movie's true name and release year "
+            "I'm not confident about that movie or TV show. Could you please provide the title and year "
             "(e.g., 'Dune, 2025' or 'Dune 2025')?"
         )
         formatted_history.append(AIMessage(content=bot_reply))
@@ -261,7 +311,7 @@ def chat_api():
         ]
         return jsonify({"reply": bot_reply})
 
-    # Analysis for movies and TV shows
+    # Analysis for movies and TV shows with improved handling for new releases
     llm_prompt = f"""
     You are an expert text analyzer. Your task is to extract **movie**, **TV show**, **anime movie**, and **anime series** names along with their release years from the chatbot response.
     **Instructions:**
@@ -294,8 +344,81 @@ def chat_api():
         tv_show_data = analysis_data.get("tv_shows", [])
     except json.JSONDecodeError:
         print(f"Invalid JSON from analysis: {analysis_response.content}")
-        movie_data = []
-        tv_show_data = []
+        # Special handling for the safety model
+        if is_safety_model_response(analysis_response.content, model_name):
+            movie_data = []
+            tv_show_data = []
+        else:
+            # Fallback to LLM-based extraction as a more robust approach
+            movie_data, tv_show_data = extract_media_with_llm(bot_reply, model_name)
+
+    # If we still don't have media data but the response mentions specific titles, try to extract them
+    if not movie_data and not tv_show_data:
+        # Use the improved title extraction function
+        from api.chatbot import extract_media_titles, identify_media_type
+        
+        # Extract potential titles from the bot reply
+        potential_titles = extract_media_titles(bot_reply)
+        
+        # Try to find years associated with titles
+        year_matches = re.findall(r'\b(19|20)\d{2}\b', bot_reply)
+        
+        # Create movie data from potential titles
+        for i, title in enumerate(potential_titles[:5]):  # Limit to first 5 potential titles
+            # Try to extract year from the title itself first
+            year_match = re.search(r'\b(19|20)\d{2}\b', title)
+            year = int(year_match.group()) if year_match else None
+            
+            # If no year in title, use year from year_matches
+            if not year and i < len(year_matches):
+                year = int(year_matches[i])
+                
+            # Clean up special titles
+            clean_title = title.strip()
+            # Handle special cases
+            if 'Empire Strikes' in clean_title and 'Back' in clean_title:
+                clean_title = 'The Empire Strikes Back'
+            elif 'Dark Knight' in clean_title and 'Rises' not in clean_title:
+                clean_title = 'The Dark Knight'
+            elif 'Wailing' in clean_title:
+                clean_title = 'The Wailing'
+            elif 'Oldboy' in clean_title:
+                clean_title = 'Oldboy'
+            elif 'Akira' in clean_title and 'anime' not in clean_title.lower():
+                clean_title = 'Akira'
+            elif 'Perfect Blue' in clean_title:
+                clean_title = 'Perfect Blue'
+            elif 'Se7en' in clean_title or 'Seven' in clean_title:
+                clean_title = 'Se7en'
+            elif 'Devil' in clean_title and 'Advocate' in clean_title:
+                clean_title = 'The Devil\'s Advocate'
+            elif 'Usual Suspects' in clean_title:
+                clean_title = 'The Usual Suspects'
+            elif 'No Country' in clean_title:
+                clean_title = 'No Country for Old Men'
+            elif 'Prisoners' in clean_title:
+                clean_title = 'Prisoners'
+            elif 'Invisible Man' in clean_title:
+                clean_title = 'The Invisible Man'
+            elif 'Little Things' in clean_title:
+                clean_title = 'The Little Things'
+            elif 'Last Duel' in clean_title:
+                clean_title = 'The Last Duel'
+            elif 'Knives Out' in clean_title:
+                clean_title = 'Knives Out'
+            elif 'Midsommar' in clean_title:
+                clean_title = 'Midsommar'
+            elif 'Glass Onion' in clean_title:
+                clean_title = 'Glass Onion: A Knives Out Mystery'
+            
+            # Identify media type
+            media_type = identify_media_type(clean_title)
+            
+            # Add to appropriate list
+            if media_type in ['movie', 'anime']:
+                movie_data.append({"title": clean_title, "year": year})
+            else:
+                tv_show_data.append({"title": clean_title, "year": year})
 
     if not movie_data and not tv_show_data:
         formatted_history.append(AIMessage(content=bot_reply))
@@ -304,29 +427,70 @@ def chat_api():
             else {"type": "ai", "content": msg.content}
             for msg in formatted_history
         ]
-        return jsonify({"reply": "I couldn't find this movie or TV show. Could you provide more details like the year, synopsis, or any actors?"})
+        return jsonify({"reply": bot_reply})
 
     media_data = {"movies": [], "tv_shows": []}
     for media_list, media_type, key in [(movie_data, "movie", "movies"), (tv_show_data, "tv", "tv_shows")]:
         for media in media_list:
             title = media["title"]
             year = media["year"]
+            
+            # Try searching with year first
             url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true"
             if year:
                 url += f"&year={year}"
+            
             response = requests.get(url).json()
             results = response.get("results", [])
+            
+            # If no results found with year, try without year
+            if not results and year:
+                url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true"
+                response = requests.get(url).json()
+                results = response.get("results", [])
+            
+            # Try with include_video=true for newer releases
+            if not results:
+                url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true&include_video=true"
+                response = requests.get(url).json()
+                results = response.get("results", [])
+            
             if not results:
                 print(f"⚠️ No {media_type} results found for: {title}")
+                # Still add the media to the response even if not found in TMDB, with a note
+                poster_url = "https://via.placeholder.com/500x750?text=No+Image"
+                media_data[key].append({
+                    "title": title,
+                    "year": year if year else "N/A",
+                    "poster_url": poster_url,
+                    "tmdb_link": "#",
+                    "release_status": " (Not found in database)"
+                })
                 continue
+                
             media_info = results[0]
             media_id = media_info.get("id")
             poster_path = media_info.get("poster_path")
+            
+            # Get release date for checking if it's recent or upcoming
+            release_date = media_info.get("release_date") if media_type == "movie" else media_info.get("first_air_date")
+            release_year = release_date[:4] if release_date else "Unknown"
+            
+            # Check if this is a recent or upcoming release
+            is_recent = is_recent_release(release_date)
+            is_upcoming = is_upcoming_release(release_date)
+            release_status = ""
+            if is_upcoming:
+                release_status = " (UPCOMING)"
+            elif is_recent:
+                release_status = " (RECENT)"
+            
             media_data[key].append({
                 "title": media_info["title"] if media_type == "movie" else media_info["name"],
-                "year": media_info.get("release_date", "Unknown")[:4] if media_type == "movie" else media_info.get("first_air_date", "Unknown")[:4],
+                "year": release_year,
                 "poster_url": f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image",
-                "tmdb_link": f"/{media_type}/{media_id}"
+                "tmdb_link": f"/{media_type}/{media_id}",
+                "release_status": release_status
             })
 
     formatted_history.append(AIMessage(content=bot_reply))
