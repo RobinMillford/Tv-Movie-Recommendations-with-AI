@@ -18,7 +18,7 @@ This is a Flask web application that allows users to discover and get recommenda
 - **New Feature:** User authentication system with registration and login
 - **New Feature:** Personalized user profiles with watchlist, wishlist, and viewing history
 - **New Feature:** "Remember Me" functionality for persistent login sessions
-- **New Feature:** Profile image upload capability with Cloudinary integration
+- **New Feature:** Profile image upload capability with Cloudinary integration for persistent storage
 - **New Feature:** Personalized recommendations based on user's watchlist, wishlist, and viewing history
 - **Backend:** PostgreSQL database for user account management and data persistence
 - **Complete UI Overhaul:** Redesigned with **Tailwind CSS** for a modern, responsive look
@@ -47,8 +47,6 @@ Check out the live demo deployed on Render [here](https://tv-movie-recommendatio
 ![Actor Profile - Tom Cruise](images/Tom-Cruise-ActorHub-04-16-2025_11_25_PM.png)
 
 ![User Profile Page](images/Profile-MovieHub.jpg)
-
-![CineBot Chat Interface](images/Cinebot.png)
 
 ## Getting Started
 
@@ -235,6 +233,26 @@ Tv-Movie-Recommendations-with-AI/
 - Optimized API calls for faster load times.
 - Chatbot responses display alongside fetched media details for seamless interaction.
 
+## Cloudinary Image Handling
+
+### 📸 **Profile Image Management**
+
+The application uses Cloudinary for profile image handling to solve the limitations of local file storage in cloud deployments:
+
+#### Implementation:
+
+- Profile images are uploaded directly to Cloudinary with smart transformations (300x300px, face detection, auto quality/format)
+- Cloudinary URLs are stored in the database instead of file paths
+- Profile pages display images using Cloudinary URLs for persistent storage
+- Backward compatibility maintained for existing local images
+
+#### Benefits:
+
+- Images persist across deployments and restarts
+- Automatic image optimization and CDN delivery
+- Scalable solution that handles any number of images
+- No data loss due to ephemeral file systems
+
 ## Chatbot Improvements
 
 The chatbot has been significantly enhanced to better handle new releases and provide more accurate recommendations:
@@ -314,37 +332,6 @@ The application uses **PostgreSQL** as its backend database for robust data pers
 - Many-to-many relationships between users and media items
 - Association tables for watchlist, wishlist, and viewing history
 - Support for both movies and TV shows with media type differentiation
-
-## Cloudinary Integration
-
-The application now uses Cloudinary for profile image handling:
-
-### Benefits
-
-- **Persistent Storage**: Images survive deployments and restarts
-- **Scalability**: Handles any number of images without performance impact
-- **Optimization**: Automatic image optimization and transformations
-- **CDN Delivery**: Fast global delivery through Content Delivery Network
-
-### Setup
-
-1. Create a free Cloudinary account at [cloudinary.com](https://cloudinary.com/)
-2. Get your credentials from the dashboard
-3. Add the following environment variables:
-   ```
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   ```
-
-### Features
-
-- Smart face detection for profile picture cropping
-- Automatic quality optimization
-- Format conversion to modern formats (WebP)
-- Backward compatibility with existing local images
-
-See [CLOUDINARY_SETUP.md](CLOUDINARY_SETUP.md) for detailed setup instructions.
 
 ## Contributing
 
