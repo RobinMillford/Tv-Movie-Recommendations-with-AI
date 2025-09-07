@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
+import urllib.parse
 
 # Load environment variables
 load_dotenv()
@@ -11,7 +12,21 @@ load_dotenv()
 # Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+
+# Configure database with SSL support for Render
+database_url = os.getenv("DATABASE_URL")
+if database_url:
+    # Handle PostgreSQL SSL requirement on Render
+    if database_url.startswith("postgresql://"):
+        # Parse the URL and add SSL parameters if not already present
+        parsed = urllib.parse.urlparse(database_url)
+        if not parsed.query:
+            # Add SSL mode requirement for Render PostgreSQL
+            database_url += "?sslmode=require"
+        elif "sslmode" not in parsed.query:
+            database_url += "&sslmode=require"
+    
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Debug: Print the database URI to verify it's correct
