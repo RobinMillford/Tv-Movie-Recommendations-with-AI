@@ -9,6 +9,11 @@ import os
 import re
 import logging
 
+# Added for Cloudinary
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,6 +23,13 @@ auth = Blueprint('auth', __name__)
 # Configuration for file uploads
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -333,22 +345,30 @@ def edit_profile():
         if 'profile_picture' in request.files:
             file = request.files['profile_picture']
             if file and file.filename != '' and allowed_file(file.filename):
-                # Create uploads directory if it doesn't exist
-                if not os.path.exists(UPLOAD_FOLDER):
-                    os.makedirs(UPLOAD_FOLDER)
-                
-                # Generate secure filename
-                filename = secure_filename(file.filename)
-                # Add user ID to filename to make it unique
-                filename = f"user_{current_user.id}_{filename}"
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
-                
-                # Save the file
-                file.save(filepath)
-                
-                # Update user's profile picture path in database
-                # Store relative path from static folder
-                current_user.profile_picture = f"uploads/{filename}"
+                try:
+                    # Upload to Cloudinary
+                    logger.info(f"Uploading profile picture for user {current_user.id}")
+                    upload_result = cloudinary.uploader.upload(
+                        file,
+                        public_id=f"user_{current_user.id}_profile_{int(datetime.now().timestamp())}",
+                        overwrite=True,
+                        transformation=[
+                            {'width': 300, 'height': 300, 'crop': 'fill', 'gravity': 'face'},
+                            {'quality': 'auto'},
+                            {'fetch_format': 'auto'}
+                        ]
+                    )
+                    
+                    # Log the upload result
+                    logger.info(f"Upload successful for user {current_user.id}: {upload_result['secure_url']}")
+                    
+                    # Store the Cloudinary URL in the database
+                    current_user.profile_picture = upload_result['secure_url']
+                    
+                    flash('Profile picture updated successfully')
+                except Exception as e:
+                    logger.error(f"Error uploading to Cloudinary for user {current_user.id}: {e}")
+                    flash('Error uploading profile picture. Please try again.')
         
         try:
             db.session.commit()
