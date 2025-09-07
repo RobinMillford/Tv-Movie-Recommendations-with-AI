@@ -332,7 +332,7 @@ Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## How to Use the Deployed Application
 
 1. **Access the App:**  
-   Visit [https://tv-movie-recommendations.onrender.com/](https://tv-movie-recommendations.onrender.com/).
+   Visit [https://tv-movie-recommendations-with-ai.onrender.com/](https://tv-movie-recommendations.onrender.com/).
 
 2. **Register an Account:**  
    Create a new account to access personalized features.
