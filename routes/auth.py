@@ -7,6 +7,11 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 import re
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 auth = Blueprint('auth', __name__)
 
@@ -72,11 +77,16 @@ def register():
         )
         new_user.set_password(password)
         
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Registration successful')
-        return redirect(url_for('auth.login'))
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error during user registration: {e}")
+            flash('An error occurred during registration. Please try again.')
+            return redirect(url_for('auth.register'))
     
     return render_template('register.html')
 
@@ -87,15 +97,21 @@ def login():
         password = request.form['password']
         remember_me = 'remember_me' in request.form  # Check if "Remember Me" is checked
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            # Pass the remember parameter to login_user
-            login_user(user, remember=remember_me)
-            flash('Logged in successfully')
-            return redirect(url_for('main.index'))
-        else:
-            flash('Invalid username or password')
+        try:
+            user = User.query.filter_by(username=username).first()
+            
+            if user and user.check_password(password):
+                # Pass the remember parameter to login_user
+                login_user(user, remember=remember_me)
+                flash('Logged in successfully')
+                logger.info(f"User {username} logged in successfully")
+                return redirect(url_for('main.index'))
+            else:
+                flash('Invalid username or password')
+                logger.warning(f"Failed login attempt for username: {username}")
+        except Exception as e:
+            logger.error(f"Database error during login: {e}")
+            flash('An error occurred during login. Please try again.')
     
     return render_template('login.html')
 
@@ -334,8 +350,14 @@ def edit_profile():
                 # Store relative path from static folder
                 current_user.profile_picture = f"uploads/{filename}"
         
-        db.session.commit()
-        flash('Profile updated successfully')
+        try:
+            db.session.commit()
+            flash('Profile updated successfully')
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error updating profile: {e}")
+            flash('An error occurred while updating your profile. Please try again.')
+        
         return redirect(url_for('auth.profile'))
     
     return render_template('edit_profile.html')

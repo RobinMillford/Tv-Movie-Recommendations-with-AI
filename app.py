@@ -13,21 +13,37 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
-# Configure database with SSL support for Render
+# Configure database with environment-aware SSL support
 database_url = os.getenv("DATABASE_URL")
 if database_url:
-    # Handle PostgreSQL SSL requirement on Render
+    # Handle PostgreSQL SSL requirement based on environment
     if database_url.startswith("postgresql://"):
-        # Parse the URL and add SSL parameters if not already present
+        # Check if we're running locally or on Render
+        is_local = 'RENDER' not in os.environ
+        
+        # Parse the URL
         parsed = urllib.parse.urlparse(database_url)
-        if not parsed.query:
-            # Add SSL mode requirement for Render PostgreSQL
-            database_url += "?sslmode=require"
-        elif "sslmode" not in parsed.query:
-            database_url += "&sslmode=require"
+        
+        if not is_local:
+            # On Render, we need SSL
+            if not parsed.query:
+                # Add SSL mode requirement for Render PostgreSQL
+                database_url += "?sslmode=require"
+            elif "sslmode" not in parsed.query:
+                database_url += "&sslmode=require"
+        else:
+            # For local development, remove SSL requirement if present
+            if "sslmode=require" in database_url:
+                database_url = database_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
     
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Add additional database configuration for better connection handling
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 
 # Debug: Print the database URI to verify it's correct
 print(f"Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
@@ -64,7 +80,11 @@ def load_user(user_id):
 with app.app_context():
     # Debug: Print the actual database engine being used
     print(f"Database engine: {db.engine}")
-    db.create_all()
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
