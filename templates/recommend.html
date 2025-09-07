@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes gradient {
             0% { background-position: 0% 50%; }
@@ -157,6 +158,24 @@
                     <a href="/news" class="nav-link hover:text-indigo-400 transition-colors">News</a>
                     <a href="/model_selection" class="nav-link hover:text-indigo-400 transition-colors">AI Chat</a>
                 </div>
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <div class="relative" id="profile-dropdown">
+                            <button id="profile-button" class="flex items-center space-x-1 text-white hover:text-gray-300">
+                                <i class="fas fa-user"></i>
+                                <span>{{ current_user.username }}</span>
+                                <i class="fas fa-caret-down"></i>
+                            </button>
+                            <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden z-10">
+                                <a href="{{ url_for('auth.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
+                                <a href="{{ url_for('main.watchlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Watchlist</a>
+                                <a href="{{ url_for('main.wishlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Wishlist</a>
+                                <a href="{{ url_for('main.viewed') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Viewed</a>
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Logout</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
                 <button class="md:hidden" id="mobile-menu-button">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -188,6 +207,35 @@
                         <img src="{{ recommend_poster[i] }}" alt="{{ recommend_movie[i] }} Poster" class="movie-image">
                         <h3 class="movie-title">{{ recommend_movie[i] }}</h3>
                     </a>
+                    {% if current_user.is_authenticated %}
+                    <div class="px-2 pb-2 flex flex-wrap gap-2 justify-center">
+                        <!-- Status indicators -->
+                        {% if (recommend_ids[i], 'movie') in user_viewed_ids %}
+                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Viewed
+                        </span>
+                        {% endif %}
+                        {% if (recommend_ids[i], 'movie') in user_wishlist_ids %}
+                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Wishlist
+                        </span>
+                        {% endif %}
+                        {% if (recommend_ids[i], 'movie') in user_watchlist_ids %}
+                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Watchlist
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -227,6 +275,31 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Profile dropdown
+            const profileButton = document.getElementById('profile-button');
+            const profileMenu = document.getElementById('profile-menu');
+            
+            if (profileButton && profileMenu) {
+                profileButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!profileButton.contains(e.target) && !profileMenu.contains(e.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Close dropdown when pressing Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
             setupMobileMenu();
         });
     </script>

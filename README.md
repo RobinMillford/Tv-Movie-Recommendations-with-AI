@@ -80,6 +80,7 @@ Check out the live demo deployed on Render [here](https://tv-movie-recommendatio
    TMDB_API_KEY=your_tmdb_api_key
    GROQ_API_KEY=your_groq_api_key
    NEWS_API_KEY=your_newsapi_key
+   DATABASE_URL=postgresql://username:password@localhost:5432/moviehub
    ```
 
 ### Running the Application
@@ -103,6 +104,7 @@ Tv-Movie-Recommendations-with-AI/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
+├── DEPLOYMENT_GUIDE.md
 ├── api/
 │   ├── __init__.py
 │   ├── chatbot.py

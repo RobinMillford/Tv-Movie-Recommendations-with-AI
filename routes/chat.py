@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from flask_login import login_required, current_user
 import requests
 import os
 from api.chatbot import get_chatbot, clean_json_response, is_recent_release, is_upcoming_release, is_safety_model_response, extract_media_with_llm
@@ -6,6 +7,9 @@ from langchain.schema import AIMessage, HumanMessage
 import json
 from datetime import datetime
 import re
+
+# Get environment variables
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
 chat = Blueprint('chat', __name__)
 
@@ -15,9 +19,14 @@ chat_sessions = {}
 @chat.route("/model_selection")
 def model_selection():
     """Route to display the model selection page"""
-    return render_template("model_selection.html")
+    # Check if user is authenticated
+    if current_user.is_authenticated:
+        return render_template("model_selection.html")
+    else:
+        return render_template("model_selection_login_required.html")
 
 @chat.route("/chat")
+@login_required
 def chat_page():
     # Get the model name from the query parameter, or use default
     model_name = request.args.get("model", "llama-3.3-70b-versatile")
@@ -30,6 +39,7 @@ def chat_page():
     return render_template("chat.html", model=model_name)
 
 @chat.route("/chat_api", methods=["POST"])
+@login_required
 def chat_api():
     user_message = request.json.get("message")
     model_name = request.json.get("model", "llama-3.3-70b-versatile")
@@ -121,7 +131,7 @@ def chat_api():
                 for member in details_response.get('credits', {}).get('cast', [])[:5]
             ] or [{'name': 'Unknown', 'character': 'Unknown'}]
             director = next(
-                (member['name'] for member in details_response.get('credits', {}).get('crew', [])
+                (member['name'] for member in details_response.get('credits', {}).get('crew', []) 
                  if member['job'] == 'Director'), 'Unknown'
             )
             production_companies = [
@@ -364,7 +374,7 @@ def chat_api():
         year_matches = re.findall(r'\b(19|20)\d{2}\b', bot_reply)
         
         # Create movie data from potential titles
-        for i, title in enumerate(potential_titles[:5]):  # Limit to first 5 potential titles
+        for i, title in enumerate(potential_titles[:10]):  # Increase limit to 10 potential titles
             # Try to extract year from the title itself first
             year_match = re.search(r'\b(19|20)\d{2}\b', title)
             year = int(year_match.group()) if year_match else None
@@ -375,41 +385,9 @@ def chat_api():
                 
             # Clean up special titles
             clean_title = title.strip()
-            # Handle special cases
-            if 'Empire Strikes' in clean_title and 'Back' in clean_title:
-                clean_title = 'The Empire Strikes Back'
-            elif 'Dark Knight' in clean_title and 'Rises' not in clean_title:
-                clean_title = 'The Dark Knight'
-            elif 'Wailing' in clean_title:
-                clean_title = 'The Wailing'
-            elif 'Oldboy' in clean_title:
-                clean_title = 'Oldboy'
-            elif 'Akira' in clean_title and 'anime' not in clean_title.lower():
-                clean_title = 'Akira'
-            elif 'Perfect Blue' in clean_title:
-                clean_title = 'Perfect Blue'
-            elif 'Se7en' in clean_title or 'Seven' in clean_title:
-                clean_title = 'Se7en'
-            elif 'Devil' in clean_title and 'Advocate' in clean_title:
-                clean_title = 'The Devil\'s Advocate'
-            elif 'Usual Suspects' in clean_title:
-                clean_title = 'The Usual Suspects'
-            elif 'No Country' in clean_title:
-                clean_title = 'No Country for Old Men'
-            elif 'Prisoners' in clean_title:
-                clean_title = 'Prisoners'
-            elif 'Invisible Man' in clean_title:
-                clean_title = 'The Invisible Man'
-            elif 'Little Things' in clean_title:
-                clean_title = 'The Little Things'
-            elif 'Last Duel' in clean_title:
-                clean_title = 'The Last Duel'
-            elif 'Knives Out' in clean_title:
-                clean_title = 'Knives Out'
-            elif 'Midsommar' in clean_title:
-                clean_title = 'Midsommar'
-            elif 'Glass Onion' in clean_title:
-                clean_title = 'Glass Onion: A Knives Out Mystery'
+            # Handle special cases using the helper function
+            from api.chatbot import _clean_special_titles
+            clean_title = _clean_special_titles(clean_title)
             
             # Identify media type
             media_type = identify_media_type(clean_title)
@@ -419,6 +397,27 @@ def chat_api():
                 movie_data.append({"title": clean_title, "year": year})
             else:
                 tv_show_data.append({"title": clean_title, "year": year})
+
+    # Additional fallback: If we still don't have data, try a more direct extraction
+    if not movie_data and not tv_show_data:
+        # Try to extract any movie/TV show-like patterns directly from the response
+        from api.chatbot import extract_media_titles
+        direct_titles = extract_media_titles(bot_reply)
+        
+        # For each title, try to search TMDB to see if it exists
+        for title in direct_titles[:5]:  # Limit to first 5
+            # Clean the title
+            from api.chatbot import _clean_special_titles
+            clean_title = _clean_special_titles(title)
+            
+            # Try to find year in the vicinity of the title
+            # Look for a pattern like "Title (Year)" or "Title Year"
+            title_with_context_pattern = rf'{re.escape(clean_title)}[^\d]{{0,20}}(\b(19|20)\d{{2}}\b)'
+            context_match = re.search(title_with_context_pattern, bot_reply)
+            year = int(context_match.group(1)) if context_match else None
+            
+            # Add to movie data by default, will be validated during TMDB search
+            movie_data.append({"title": clean_title, "year": year})
 
     if not movie_data and not tv_show_data:
         formatted_history.append(AIMessage(content=bot_reply))

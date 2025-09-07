@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MovieHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+            color: white;
+        }
+        
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .recommendation-card {
+            transition: all 0.3s ease;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-image {
+            border: 3px solid #6366f1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-gray-900 shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-indigo-400">MovieHub</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <div class="relative" id="profile-dropdown">
+                            <button id="profile-button" class="flex items-center space-x-1 text-white hover:text-gray-300">
+                                <i class="fas fa-user"></i>
+                                <span>{{ current_user.username }}</span>
+                                <i class="fas fa-caret-down"></i>
+                            </button>
+                            <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden z-10">
+                                <a href="{{ url_for('auth.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
+                                <a href="{{ url_for('main.watchlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Watchlist</a>
+                                <a href="{{ url_for('main.wishlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Wishlist</a>
+                                <a href="{{ url_for('main.viewed') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Viewed</a>
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Logout</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-white hover:text-indigo-400">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="text-white hover:text-indigo-400">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-indigo-400">My Profile</h1>
+                <a href="{{ url_for('auth.edit_profile') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded transition duration-300">
+                    Edit Profile
+                </a>
+            </div>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="bg-green-500 text-white p-2 mb-4 rounded">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1">
+                    <div class="bg-gray-700 rounded-lg p-6">
+                        <div class="text-center">
+                            {% if current_user.profile_picture %}
+                                <img src="{{ url_for('static', filename=current_user.profile_picture) }}" alt="Profile Picture" class="rounded-full w-24 h-24 mx-auto mb-4 object-cover profile-image">
+                            {% else %}
+                                <div class="bg-gray-600 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center profile-image">
+                                    <span class="text-3xl font-bold">{{ current_user.username[0].upper() }}</span>
+                                </div>
+                            {% endif %}
+                            <h2 class="text-xl font-bold">{{ current_user.username }}</h2>
+                            <p class="text-gray-400">{{ current_user.email }}</p>
+                            <p class="text-gray-400 text-sm mt-2">Member since {{ current_user.date_joined.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h3 class="text-lg font-semibold mb-3">About</h3>
+                            {% if current_user.bio %}
+                                <p>{{ current_user.bio }}</p>
+                            {% else %}
+                                <p class="text-gray-400">No bio available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="stat-card bg-gray-700 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4 text-indigo-400">Watchlist</h3>
+                            <p class="text-gray-400">Movies and shows you want to watch</p>
+                            <div class="mt-4">
+                                <a href="{{ url_for('main.watchlist') }}" class="text-indigo-400 hover:text-indigo-300">View all ({{ current_user.watchlist|length }})</a>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card bg-gray-700 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4 text-indigo-400">Wishlist</h3>
+                            <p class="text-gray-400">Your favorite movies and shows</p>
+                            <div class="mt-4">
+                                <a href="{{ url_for('main.wishlist') }}" class="text-indigo-400 hover:text-indigo-300">View all ({{ current_user.wishlist|length }})</a>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card bg-gray-700 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4 text-indigo-400">Viewing History</h3>
+                            <p class="text-gray-400">Movies and shows you've watched</p>
+                            <div class="mt-4">
+                                <a href="{{ url_for('main.viewed') }}" class="text-indigo-400 hover:text-indigo-300">View all ({{ current_user.viewed_media|length }})</a>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card bg-gray-700 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold mb-4 text-indigo-400">Recommendations</h3>
+                            <p class="text-gray-400">Personalized suggestions</p>
+                            <div class="mt-4">
+                                <a href="{{ url_for('auth.profile_recommendations') }}" class="text-indigo-400 hover:text-indigo-300">View all</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Personal Stats -->
+                    <div class="bg-gray-700 rounded-lg p-6 mb-6">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-400">Your Stats</h3>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-2xl font-bold text-indigo-400">{{ current_user.watchlist|length }}</div>
+                                <div class="text-gray-400">Watchlist</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-indigo-400">{{ current_user.wishlist|length }}</div>
+                                <div class="text-gray-400">Wishlist</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-indigo-400">{{ current_user.viewed_media|length }}</div>
+                                <div class="text-gray-400">Viewed</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Recommendations Preview -->
+                    <div class="bg-gray-700 rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-indigo-400">Recommended for You</h3>
+                            <a href="{{ url_for('auth.profile_recommendations') }}" class="text-indigo-400 hover:text-indigo-300 text-sm">View all</a>
+                        </div>
+                        <p class="text-gray-400 mb-4">Based on your watchlist, wishlist, and viewing history</p>
+                        
+                        <!-- Preview of recommendations -->
+                        <div class="text-center py-4" id="recommendations-preview">
+                            <p class="text-gray-400">Loading personalized recommendations...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile dropdown
+            const profileButton = document.getElementById('profile-button');
+            const profileMenu = document.getElementById('profile-menu');
+            
+            if (profileButton && profileMenu) {
+                profileButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!profileButton.contains(e.target) && !profileMenu.contains(e.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Close dropdown when pressing Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Load recommendations preview
+            loadRecommendationsPreview();
+        });
+        
+        function loadRecommendationsPreview() {
+            fetch('/profile/recommendations-preview')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('recommendations-preview');
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        let html = '<div class="grid grid-cols-3 gap-4">';
+                        // Show recommendations
+                        data.recommendations.forEach(rec => {
+                            html += `
+                                <a href="/${rec.media_type === 'movie' ? 'movie' : 'tv'}/${rec.id}" class="recommendation-card block">
+                                    <img src="${rec.poster}" alt="${rec.title}" class="w-full rounded mb-2" style="aspect-ratio: 2/3; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
+                                    <div class="text-xs font-semibold truncate">${rec.title}</div>
+                                    <div class="text-xs text-gray-400">${rec.release_date}</div>
+                                    <div class="text-xs text-indigo-300 truncate" title="Based on: ${rec.based_on}">Based on: ${rec.based_on}</div>
+                                </a>
+                            `;
+                        });
+                        html += '</div>';
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p class="text-gray-400">Add items to your lists to get personalized recommendations.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading recommendations:', error);
+                    document.getElementById('recommendations-preview').innerHTML = '<p class="text-gray-400">Unable to load recommendations at this time.</p>';
+                });
+        }
+    </script>
+</body>
+</html>

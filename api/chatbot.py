@@ -152,7 +152,8 @@ def extract_media_titles(text):
     This function helps identify titles that the LLM might mention but the structured extraction might miss.
     """
     # Pattern 1: Extract titles in markdown table format like "| **Title** | Year |"
-    table_pattern = r'\|\s*\**([^|\n]+?)\s*\**\s*\|\s*(?:\d{4})'
+    # Handle both bold and non-bold formats in tables
+    table_pattern = r'\|\s*[*]{0,2}([^|\n]+?)[*]{0,2}\s*\|\s*(?:\d{4})'
     table_matches = re.findall(table_pattern, text)
     
     # Pattern 2: Extract titles in parentheses format like "Title (Year)"
@@ -163,6 +164,14 @@ def extract_media_titles(text):
     bold_pattern = r'\*\*([^*]+?)\*\*'
     bold_matches = re.findall(bold_pattern, text)
     
+    # Pattern 4: Extract titles in regular list format like "1. Title (Year)" or "- Title (Year)"
+    list_pattern = r'(?:\d+\.\s*|-)\s*([^(]+?)\s*\(((?:19|20)\d{2})\)'
+    list_matches = re.findall(list_pattern, text)
+    
+    # Pattern 5: Extract titles that look like movie names with years at the end
+    movie_pattern = r'([A-Z][^(]*?)\s*\(((?:19|20)\d{2})\)'
+    movie_matches = re.findall(movie_pattern, text)
+    
     # Combine all matches
     all_matches = []
     
@@ -170,44 +179,34 @@ def extract_media_titles(text):
     for match in table_matches:
         # Clean up the title by removing extra formatting
         clean_title = re.sub(r'\*+', '', match).strip()
-        # Remove common prefixes/suffixes
-        clean_title = re.sub(r'^The Empire Strikes\s*—\s*The Dark Side\s*\(*', 'The Empire Strikes Back', clean_title)
-        # Handle other special cases
-        if 'Oldboy' in clean_title and '(' in clean_title:
-            clean_title = 'Oldboy'
-        elif 'Wailing' in clean_title and '(' in clean_title:
-            clean_title = 'The Wailing'
-        elif 'Akira' in clean_title and 'anime' in clean_title.lower():
-            clean_title = 'Akira'
-        elif 'Perfect Blue' in clean_title and 'anime' in clean_title.lower():
-            clean_title = 'Perfect Blue'
+        # Handle special cases
+        clean_title = _clean_special_titles(clean_title)
         all_matches.append(clean_title)
     
     # Add paren matches
     for match in paren_matches:
         title = match[0].strip()
         # Clean up titles with director names or special formatting
-        title = re.sub(r'\s*\(.*?\)\s*$', '', title)  # Remove director names in parentheses
-        title = re.sub(r'\s*\-.*$', '', title)  # Remove dash-separated parts
-        all_matches.append(title.strip())
+        clean_title = _clean_parenthetical_title(title)
+        all_matches.append(clean_title)
     
     # Add bold matches
     for match in bold_matches:
         # Clean up the title
         clean_title = match.strip()
-        # Handle special cases
-        if 'Empire Strikes' in clean_title and 'Back' in clean_title:
-            clean_title = 'The Empire Strikes Back'
-        elif 'Dark Knight' in clean_title:
-            clean_title = 'The Dark Knight'
-        elif 'Wailing' in clean_title:
-            clean_title = 'The Wailing'
-        elif 'Oldboy' in clean_title:
-            clean_title = 'Oldboy'
-        elif 'Akira' in clean_title:
-            clean_title = 'Akira'
-        elif 'Perfect Blue' in clean_title:
-            clean_title = 'Perfect Blue'
+        clean_title = _clean_special_titles(clean_title)
+        all_matches.append(clean_title)
+    
+    # Add list matches
+    for match in list_matches:
+        title = match[0].strip()
+        clean_title = _clean_parenthetical_title(title)
+        all_matches.append(clean_title)
+    
+    # Add movie pattern matches
+    for match in movie_matches:
+        title = match[0].strip()
+        clean_title = _clean_parenthetical_title(title)
         all_matches.append(clean_title)
     
     # Filter out common words that aren't titles
@@ -407,6 +406,62 @@ def extract_media_titles(text):
             clean_titles.append(clean_title)
     
     return clean_titles
+
+def _clean_special_titles(title):
+    """Helper function to clean special title cases"""
+    # Remove common prefixes/suffixes
+    clean_title = re.sub(r'^The Empire Strikes\s*—\s*The Dark Side\s*\(*', 'The Empire Strikes Back', title)
+    # Handle other special cases
+    if 'Oldboy' in clean_title and '(' in clean_title:
+        clean_title = 'Oldboy'
+    elif 'Wailing' in clean_title and '(' in clean_title:
+        clean_title = 'The Wailing'
+    elif 'Akira' in clean_title and 'anime' in clean_title.lower():
+        clean_title = 'Akira'
+    elif 'Perfect Blue' in clean_title and 'anime' in clean_title.lower():
+        clean_title = 'Perfect Blue'
+    elif 'Empire Strikes' in clean_title and 'Back' in clean_title:
+        clean_title = 'The Empire Strikes Back'
+    elif 'Dark Knight' in clean_title and 'Rises' not in clean_title:
+        clean_title = 'The Dark Knight'
+    elif 'Wailing' in clean_title:
+        clean_title = 'The Wailing'
+    elif 'Oldboy' in clean_title:
+        clean_title = 'Oldboy'
+    elif 'Akira' in clean_title:
+        clean_title = 'Akira'
+    elif 'Perfect Blue' in clean_title:
+        clean_title = 'Perfect Blue'
+    elif 'Se7en' in clean_title or 'Seven' in clean_title:
+        clean_title = 'Se7en'
+    elif 'Devil' in clean_title and 'Advocate' in clean_title:
+        clean_title = 'The Devil\'s Advocate'
+    elif 'Usual Suspects' in clean_title:
+        clean_title = 'The Usual Suspects'
+    elif 'No Country' in clean_title:
+        clean_title = 'No Country for Old Men'
+    elif 'Prisoners' in clean_title:
+        clean_title = 'Prisoners'
+    elif 'Invisible Man' in clean_title:
+        clean_title = 'The Invisible Man'
+    elif 'Little Things' in clean_title:
+        clean_title = 'The Little Things'
+    elif 'Last Duel' in clean_title:
+        clean_title = 'The Last Duel'
+    elif 'Knives Out' in clean_title:
+        clean_title = 'Knives Out'
+    elif 'Midsommar' in clean_title:
+        clean_title = 'Midsommar'
+    elif 'Glass Onion' in clean_title:
+        clean_title = 'Glass Onion: A Knives Out Mystery'
+    return clean_title.strip()
+
+def _clean_parenthetical_title(title):
+    """Helper function to clean titles with parenthetical information"""
+    # Clean up titles with director names or special formatting
+    clean_title = re.sub(r'\s*\(.*?\)\s*$', '', title)  # Remove director names in parentheses
+    clean_title = re.sub(r'\s*\-.*$', '', clean_title)  # Remove dash-separated parts
+    return clean_title.strip()
 
 def identify_media_type(title):
     """

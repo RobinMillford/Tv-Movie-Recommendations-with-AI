@@ -116,7 +116,8 @@ def fetch_airing_today_shows(max_shows=18):
             'id': show['id'],
             'name': show['name'],
             'first_air_date': show.get('first_air_date', 'N/A'),
-            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}",
+            'vote_average': show.get('vote_average', 0)
         } for show in filtered_results[:max_shows]
     ]
 
@@ -130,7 +131,8 @@ def fetch_on_the_air_shows(max_shows=18):
             'id': show['id'],
             'name': show['name'],
             'first_air_date': show.get('first_air_date', 'N/A'),
-            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}",
+            'vote_average': show.get('vote_average', 0)
         } for show in filtered_results[:max_shows]
     ]
 
@@ -144,7 +146,8 @@ def fetch_popular_shows(max_shows=18):
             'id': show['id'],
             'name': show['name'],
             'first_air_date': show.get('first_air_date', 'N/A'),
-            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}"
+            'poster_path': f"https://image.tmdb.org/t/p/w500{show['poster_path']}",
+            'vote_average': show.get('vote_average', 0)
         } for show in filtered_results[:max_shows]
     ]
 

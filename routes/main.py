@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 import requests
 import time
 import os
+from datetime import datetime
+from sqlalchemy import select
 from api.tmdb_client import (
     fetch_now_playing_movies, fetch_popular_movies, fetch_upcoming_movies,
     fetch_trending_people, fetch_airing_today_shows, fetch_on_the_air_shows,
     fetch_popular_shows, fetch_trending_movies, fetch_movies_by_genre,
     fetch_shows_by_genre, fetch_poster, fetch_tmdb_recommendations
 )
+from flask_login import login_required, current_user
+from models import db, MediaItem, user_watchlist, user_wishlist, user_viewed
 
 # Get environment variables
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -28,6 +32,17 @@ def index():
     on_the_air = fetch_on_the_air_shows()
     popular_shows = fetch_popular_shows()
     trending_people = fetch_trending_people()
+    
+    # Get user's lists if authenticated
+    user_watchlist_ids = set()
+    user_wishlist_ids = set()
+    user_viewed_ids = set()
+    
+    if current_user.is_authenticated:
+        user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+        user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+        user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+    
     return render_template(
         'index.html',
         trending_backdrops=trending_backdrops,
@@ -37,7 +52,10 @@ def index():
         airing_today=airing_today,
         on_the_air=on_the_air,
         popular_shows=popular_shows,
-        trending_people=trending_people
+        trending_people=trending_people,
+        user_watchlist_ids=user_watchlist_ids,
+        user_wishlist_ids=user_wishlist_ids,
+        user_viewed_ids=user_viewed_ids
     )
 
 @main.route('/search', methods=['POST'])
@@ -86,8 +104,19 @@ def search():
             'profile_path': p.get('profile_path')
         } for p in person_data if p.get('profile_path')
     ]
+    
+    # Get user's lists if authenticated
+    user_watchlist_ids = set()
+    user_wishlist_ids = set()
+    user_viewed_ids = set()
+    
+    if current_user.is_authenticated:
+        user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+        user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+        user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
 
-    return render_template('search_results.html', query=query, movies=movies, shows=shows, people=people)
+    return render_template('search_results.html', query=query, movies=movies, shows=shows, people=people,
+                          user_watchlist_ids=user_watchlist_ids, user_wishlist_ids=user_wishlist_ids, user_viewed_ids=user_viewed_ids)
 
 @main.route('/autocomplete')
 def autocomplete():
@@ -167,7 +196,21 @@ def genre_page(genre_name):
     genre_id = genre_mapping.get(genre_name)
     if genre_id:
         movies = fetch_movies_by_genre(genre_id)
-        return render_template('genre.html', genre_name=genre_name.capitalize(), movies=movies)
+        
+        # Get user's lists if authenticated
+        user_watchlist_ids = set()
+        user_wishlist_ids = set()
+        user_viewed_ids = set()
+        
+        if current_user.is_authenticated:
+            user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+            user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+            user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+        
+        return render_template('genre.html', genre_name=genre_name.capitalize(), movies=movies,
+                              user_watchlist_ids=user_watchlist_ids,
+                              user_wishlist_ids=user_wishlist_ids,
+                              user_viewed_ids=user_viewed_ids)
     else:
         return render_template('genre_not_found.html', genre_name=genre_name.capitalize())
 
@@ -181,7 +224,21 @@ def tv_genre_page(genre_name):
     genre_id = genre_mapping.get(genre_name)
     if genre_id:
         shows = fetch_shows_by_genre(genre_id)
-        return render_template('tv_genre.html', genre_name=genre_name.replace('_', ' ').capitalize(), shows=shows)
+        
+        # Get user's lists if authenticated
+        user_watchlist_ids = set()
+        user_wishlist_ids = set()
+        user_viewed_ids = set()
+        
+        if current_user.is_authenticated:
+            user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+            user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+            user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+        
+        return render_template('tv_genre.html', genre_name=genre_name.replace('_', ' ').capitalize(), shows=shows,
+                              user_watchlist_ids=user_watchlist_ids,
+                              user_wishlist_ids=user_wishlist_ids,
+                              user_viewed_ids=user_viewed_ids)
     else:
         return render_template('genre_not_found.html', genre_name=genre_name.replace('_', ' ').capitalize())
 
@@ -211,12 +268,25 @@ def recommend():
                 recommend_poster.append(fetch_poster(rec['id']))
                 recommend_ids.append(rec['id'])  # Store the movie ID
 
+        # Get user's lists if authenticated
+        user_watchlist_ids = set()
+        user_wishlist_ids = set()
+        user_viewed_ids = set()
+        
+        if current_user.is_authenticated:
+            user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+            user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+            user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+
         return render_template('recommend.html', 
                                searched_movie=movie_name, 
                                searched_movie_poster=searched_movie_poster,
                                recommend_movie=recommend_movie, 
                                recommend_poster=recommend_poster, 
-                               recommend_ids=recommend_ids)  # Pass the IDs to the template
+                               recommend_ids=recommend_ids,
+                               user_watchlist_ids=user_watchlist_ids,
+                               user_wishlist_ids=user_wishlist_ids,
+                               user_viewed_ids=user_viewed_ids)  # Pass the IDs to the template
     else:
         return render_template('no_results.html', searched_movie=movie_name)
 
@@ -246,11 +316,351 @@ def tv_recommend():
                 recommend_poster.append(fetch_poster(rec['id'], is_movie=False))
                 recommend_ids.append(rec['id'])  # Store the TV show ID
 
+        # Get user's lists if authenticated
+        user_watchlist_ids = set()
+        user_wishlist_ids = set()
+        user_viewed_ids = set()
+        
+        if current_user.is_authenticated:
+            user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+            user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+            user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+
         return render_template('tv_recommend.html', 
                                searched_show=show_name, 
                                searched_show_poster=searched_show_poster,
                                recommend_show=recommend_show, 
                                recommend_poster=recommend_poster, 
-                               recommend_ids=recommend_ids)  # Pass the IDs to the template
+                               recommend_ids=recommend_ids,
+                               user_watchlist_ids=user_watchlist_ids,
+                               user_wishlist_ids=user_wishlist_ids,
+                               user_viewed_ids=user_viewed_ids)  # Pass the IDs to the template
     else:
         return render_template('no_results.html', searched_show=show_name)
+
+@main.route('/watchlist')
+@login_required
+def watchlist():
+    """Display user's watchlist"""
+    watchlist_items = current_user.watchlist
+    
+    # Get user's lists for status indicators
+    user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+    user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+    user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+    
+    return render_template('watchlist.html', watchlist=watchlist_items,
+                          user_watchlist_ids=user_watchlist_ids,
+                          user_wishlist_ids=user_wishlist_ids,
+                          user_viewed_ids=user_viewed_ids)
+
+@main.route('/wishlist')
+@login_required
+def wishlist():
+    """Display user's wishlist"""
+    wishlist_items = current_user.wishlist
+    
+    # Get user's lists for status indicators
+    user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+    user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+    user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+    
+    return render_template('wishlist.html', wishlist=wishlist_items,
+                          user_watchlist_ids=user_watchlist_ids,
+                          user_wishlist_ids=user_wishlist_ids,
+                          user_viewed_ids=user_viewed_ids)
+
+@main.route('/viewed')
+@login_required
+def viewed():
+    """Display user's viewing history"""
+    viewed_items = current_user.viewed_media
+    
+    # Get user's lists for status indicators
+    user_watchlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.watchlist}
+    user_wishlist_ids = {(item.tmdb_id, item.media_type) for item in current_user.wishlist}
+    user_viewed_ids = {(item.tmdb_id, item.media_type) for item in current_user.viewed_media}
+    
+    return render_template('viewed.html', viewed=viewed_items,
+                          user_watchlist_ids=user_watchlist_ids,
+                          user_wishlist_ids=user_wishlist_ids,
+                          user_viewed_ids=user_viewed_ids)
+
+@main.route('/add_to_watchlist/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def add_to_watchlist(media_id, media_type):
+    """Add a movie or TV show to the user's watchlist"""
+    # Check if media item exists in our database, if not create it
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if not media_item:
+        # Fetch from TMDB API
+        url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={TMDB_API_KEY}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            title = data.get('title') if media_type == 'movie' else data.get('name')
+            release_date_str = data.get('release_date') if media_type == 'movie' else data.get('first_air_date')
+            # Convert string date to Python date object
+            release_date = None
+            if release_date_str:
+                try:
+                    release_date = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    # Handle invalid date formats
+                    release_date = None
+            poster_path = data.get('poster_path')
+            overview = data.get('overview')
+            rating = data.get('vote_average')
+            
+            media_item = MediaItem(
+                tmdb_id=media_id,
+                media_type=media_type,
+                title=title,
+                release_date=release_date,
+                poster_path=poster_path,
+                overview=overview,
+                rating=rating
+            )
+            db.session.add(media_item)
+            db.session.commit()
+    
+    # Check if already in watchlist
+    stmt = db.select(user_watchlist).where(
+        user_watchlist.c.user_id == current_user.id,
+        user_watchlist.c.media_id == media_item.id,
+        user_watchlist.c.media_type == media_type
+    )
+    result = db.session.execute(stmt).fetchone()
+    
+    # Add to watchlist if not already there
+    if not result:
+        stmt = user_watchlist.insert().values(
+            user_id=current_user.id,
+            media_id=media_item.id,
+            media_type=media_type
+        )
+        db.session.execute(stmt)
+        db.session.commit()
+        flash(f'Added {media_item.title} to your watchlist!')
+    else:
+        flash(f'{media_item.title} is already in your watchlist!')
+    
+    # Redirect back to the previous page or to the media detail page
+    return redirect(request.referrer or url_for('main.index'))
+
+@main.route('/add_to_wishlist/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def add_to_wishlist(media_id, media_type):
+    """Add a movie or TV show to the user's wishlist"""
+    # Check if media item exists in our database, if not create it
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if not media_item:
+        # Fetch from TMDB API
+        url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={TMDB_API_KEY}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            title = data.get('title') if media_type == 'movie' else data.get('name')
+            release_date_str = data.get('release_date') if media_type == 'movie' else data.get('first_air_date')
+            # Convert string date to Python date object
+            release_date = None
+            if release_date_str:
+                try:
+                    release_date = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    # Handle invalid date formats
+                    release_date = None
+            poster_path = data.get('poster_path')
+            overview = data.get('overview')
+            rating = data.get('vote_average')
+            
+            media_item = MediaItem(
+                tmdb_id=media_id,
+                media_type=media_type,
+                title=title,
+                release_date=release_date,
+                poster_path=poster_path,
+                overview=overview,
+                rating=rating
+            )
+            db.session.add(media_item)
+            db.session.commit()
+    
+    # Check if already in wishlist
+    stmt = db.select(user_wishlist).where(
+        user_wishlist.c.user_id == current_user.id,
+        user_wishlist.c.media_id == media_item.id,
+        user_wishlist.c.media_type == media_type
+    )
+    result = db.session.execute(stmt).fetchone()
+    
+    # Add to wishlist if not already there
+    if not result:
+        stmt = user_wishlist.insert().values(
+            user_id=current_user.id,
+            media_id=media_item.id,
+            media_type=media_type
+        )
+        db.session.execute(stmt)
+        db.session.commit()
+        flash(f'Added {media_item.title} to your wishlist!')
+    else:
+        flash(f'{media_item.title} is already in your wishlist!')
+    
+    # Redirect back to the previous page or to the media detail page
+    return redirect(request.referrer or url_for('main.index'))
+
+@main.route('/mark_as_viewed/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def mark_as_viewed(media_id, media_type):
+    """Mark a movie or TV show as viewed"""
+    # Check if media item exists in our database, if not create it
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if not media_item:
+        # Fetch from TMDB API
+        url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={TMDB_API_KEY}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            title = data.get('title') if media_type == 'movie' else data.get('name')
+            release_date_str = data.get('release_date') if media_type == 'movie' else data.get('first_air_date')
+            # Convert string date to Python date object
+            release_date = None
+            if release_date_str:
+                try:
+                    release_date = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    # Handle invalid date formats
+                    release_date = None
+            poster_path = data.get('poster_path')
+            overview = data.get('overview')
+            rating = data.get('vote_average')
+            
+            media_item = MediaItem(
+                tmdb_id=media_id,
+                media_type=media_type,
+                title=title,
+                release_date=release_date,
+                poster_path=poster_path,
+                overview=overview,
+                rating=rating
+            )
+            db.session.add(media_item)
+            db.session.commit()
+    
+    # Check if already viewed
+    stmt = db.select(user_viewed).where(
+        user_viewed.c.user_id == current_user.id,
+        user_viewed.c.media_id == media_item.id,
+        user_viewed.c.media_type == media_type
+    )
+    result = db.session.execute(stmt).fetchone()
+    
+    # Add to viewed if not already there
+    if not result:
+        stmt = user_viewed.insert().values(
+            user_id=current_user.id,
+            media_id=media_item.id,
+            media_type=media_type
+        )
+        db.session.execute(stmt)
+        db.session.commit()
+        flash(f'Marked {media_item.title} as viewed!')
+    else:
+        flash(f'{media_item.title} is already marked as viewed!')
+    
+    # Redirect back to the previous page or to the media detail page
+    return redirect(request.referrer or url_for('main.index'))
+
+@main.route('/remove_from_watchlist/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def remove_from_watchlist(media_id, media_type):
+    """Remove a movie or TV show from the user's watchlist"""
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if media_item:
+        # Check if in watchlist
+        stmt = db.select(user_watchlist).where(
+            user_watchlist.c.user_id == current_user.id,
+            user_watchlist.c.media_id == media_item.id,
+            user_watchlist.c.media_type == media_type
+        )
+        result = db.session.execute(stmt).fetchone()
+        
+        if result:
+            # Remove from watchlist
+            stmt = user_watchlist.delete().where(
+                user_watchlist.c.user_id == current_user.id,
+                user_watchlist.c.media_id == media_item.id,
+                user_watchlist.c.media_type == media_type
+            )
+            db.session.execute(stmt)
+            db.session.commit()
+            flash(f'Removed {media_item.title} from your watchlist!')
+        else:
+            flash('Item not found in your watchlist!')
+    else:
+        flash('Item not found!')
+    
+    return redirect(request.referrer or url_for('main.watchlist'))
+
+@main.route('/remove_from_wishlist/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def remove_from_wishlist(media_id, media_type):
+    """Remove a movie or TV show from the user's wishlist"""
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if media_item:
+        # Check if in wishlist
+        stmt = db.select(user_wishlist).where(
+            user_wishlist.c.user_id == current_user.id,
+            user_wishlist.c.media_id == media_item.id,
+            user_wishlist.c.media_type == media_type
+        )
+        result = db.session.execute(stmt).fetchone()
+        
+        if result:
+            # Remove from wishlist
+            stmt = user_wishlist.delete().where(
+                user_wishlist.c.user_id == current_user.id,
+                user_wishlist.c.media_id == media_item.id,
+                user_wishlist.c.media_type == media_type
+            )
+            db.session.execute(stmt)
+            db.session.commit()
+            flash(f'Removed {media_item.title} from your wishlist!')
+        else:
+            flash('Item not found in your wishlist!')
+    else:
+        flash('Item not found!')
+    
+    return redirect(request.referrer or url_for('main.wishlist'))
+
+@main.route('/remove_from_viewed/<int:media_id>/<media_type>', methods=['GET'])
+@login_required
+def remove_from_viewed(media_id, media_type):
+    """Remove a movie or TV show from the user's viewing history"""
+    media_item = MediaItem.query.filter_by(tmdb_id=media_id, media_type=media_type).first()
+    if media_item:
+        # Check if in viewed
+        stmt = db.select(user_viewed).where(
+            user_viewed.c.user_id == current_user.id,
+            user_viewed.c.media_id == media_item.id,
+            user_viewed.c.media_type == media_type
+        )
+        result = db.session.execute(stmt).fetchone()
+        
+        if result:
+            # Remove from viewed
+            stmt = user_viewed.delete().where(
+                user_viewed.c.user_id == current_user.id,
+                user_viewed.c.media_id == media_item.id,
+                user_viewed.c.media_type == media_type
+            )
+            db.session.execute(stmt)
+            db.session.commit()
+            flash(f'Removed {media_item.title} from your viewing history!')
+        else:
+            flash('Item not found in your viewing history!')
+    else:
+        flash('Item not found!')
+    
+    return redirect(request.referrer or url_for('main.viewed'))

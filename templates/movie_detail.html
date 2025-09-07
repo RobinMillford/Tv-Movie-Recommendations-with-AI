@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes gradient {
             0% { background-position: 0% 50%; }
@@ -236,6 +237,24 @@
                     <a href="/news" class="nav-link hover:text-indigo-400 transition-colors">News</a>
                     <a href="/model_selection" class="nav-link hover:text-indigo-400 transition-colors">AI Chat</a>
                 </div>
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <div class="relative" id="profile-dropdown">
+                            <button id="profile-button" class="flex items-center space-x-1 text-white hover:text-gray-300">
+                                <i class="fas fa-user"></i>
+                                <span>{{ current_user.username }}</span>
+                                <i class="fas fa-caret-down"></i>
+                            </button>
+                            <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden z-10">
+                                <a href="{{ url_for('auth.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
+                                <a href="{{ url_for('main.watchlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Watchlist</a>
+                                <a href="{{ url_for('main.wishlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Wishlist</a>
+                                <a href="{{ url_for('main.viewed') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Viewed</a>
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Logout</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
                 <button class="md:hidden" id="mobile-menu-button">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -294,6 +313,65 @@
                         </svg>
                         Play Trailer
                     </button>
+                    
+                    <!-- Status indicators and Action Buttons -->
+                    {% if current_user.is_authenticated %}
+                    <div class="flex flex-wrap gap-4">
+                        <!-- Status indicators -->
+                        {% if (movie.id, 'movie') in user_viewed_ids %}
+                        <span class="text-sm bg-green-600 text-white px-3 py-1 rounded flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Viewed
+                        </span>
+                        {% endif %}
+                        {% if (movie.id, 'movie') in user_wishlist_ids %}
+                        <span class="text-sm bg-pink-600 text-white px-3 py-1 rounded flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Wishlist
+                        </span>
+                        {% endif %}
+                        {% if (movie.id, 'movie') in user_watchlist_ids %}
+                        <span class="text-sm bg-indigo-600 text-white px-3 py-1 rounded flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Watchlist
+                        </span>
+                        {% endif %}
+                        
+                        <!-- Action buttons - allow adding to multiple lists -->
+                        <div class="flex flex-wrap gap-2">
+                            {% if (movie.id, 'movie') not in user_watchlist_ids %}
+                            <a href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}" class="glass-effect text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Add to Watchlist
+                            </a>
+                            {% endif %}
+                            {% if (movie.id, 'movie') not in user_wishlist_ids %}
+                            <a href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}" class="glass-effect text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-pink-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                Add to Wishlist
+                            </a>
+                            {% endif %}
+                            {% if (movie.id, 'movie') not in user_viewed_ids %}
+                            <a href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}" class="glass-effect text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Mark as Viewed
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                     
                     <!-- Tagline -->
                     {% if movie.tagline %}
@@ -406,6 +484,63 @@
                             <p class="text-gray-400 text-xs">{{ rec.release_date }}</p>
                         </div>
                     </a>
+                    {% if current_user.is_authenticated %}
+                    <div class="px-2 pb-2 flex flex-wrap gap-1 justify-center">
+                        <!-- Status indicators -->
+                        {% if (rec.id, 'movie') in user_viewed_ids %}
+                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Viewed
+                        </span>
+                        {% endif %}
+                        {% if (rec.id, 'movie') in user_wishlist_ids %}
+                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Wishlist
+                        </span>
+                        {% endif %}
+                        {% if (rec.id, 'movie') in user_watchlist_ids %}
+                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Watchlist
+                        </span>
+                        {% endif %}
+                        
+                        <!-- Action buttons - allow adding to multiple lists -->
+                        <div class="flex flex-wrap gap-1 justify-center mt-1">
+                            {% if (rec.id, 'movie') not in user_watchlist_ids %}
+                            <a href="{{ url_for('main.add_to_watchlist', media_id=rec.id, media_type='movie') }}" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                WL
+                            </a>
+                            {% endif %}
+                            {% if (rec.id, 'movie') not in user_wishlist_ids %}
+                            <a href="{{ url_for('main.add_to_wishlist', media_id=rec.id, media_type='movie') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                Wish
+                            </a>
+                            {% endif %}
+                            {% if (rec.id, 'movie') not in user_viewed_ids %}
+                            <a href="{{ url_for('main.mark_as_viewed', media_id=rec.id, media_type='movie') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Viewed
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -486,6 +621,31 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Profile dropdown
+            const profileButton = document.getElementById('profile-button');
+            const profileMenu = document.getElementById('profile-menu');
+            
+            if (profileButton && profileMenu) {
+                profileButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!profileButton.contains(e.target) && !profileMenu.contains(e.target)) {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Close dropdown when pressing Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        profileMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
             // Mobile menu
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.createElement('div');
@@ -494,7 +654,10 @@
                 <div class="container mx-auto px-4 py-4">
                     <div class="flex flex-col space-y-4">
                         <a href="/" class="text-white hover:text-indigo-400">Home</a>
+                        <a href="/movies" class="text-white hover:text-indigo-400">Movies</a>
                         <a href="/tv_shows" class="text-white hover:text-indigo-400">TV Shows</a>
+                        <a href="/news" class="text-white hover:text-indigo-400">News</a>
+                        <a href="/model_selection" class="text-white hover:text-indigo-400">AI Chat</a>
                     </div>
                 </div>
             `;
@@ -504,69 +667,131 @@
                 mobileMenu.classList.toggle('hidden');
             });
 
-            // Trailer modal
-            const trailerButton = document.getElementById('trailer-button');
-            const trailerModal = document.getElementById('trailer-modal');
-            const closeModal = document.getElementById('close-modal');
-            const trailerIframe = document.getElementById('trailer-iframe');
-            const trailerUrl = "{{ movie.trailer_url }}";
+            // Add floating chat button
+            const chatButton = document.createElement('a');
+            chatButton.href = '/model_selection';
+            chatButton.id = 'chatbot-button';
+            chatButton.className = 'fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg z-40 transition-all duration-300 hover:scale-110';
+            chatButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            `;
+            document.body.appendChild(chatButton);
 
-            trailerButton.addEventListener('click', () => {
-                trailerIframe.src = trailerUrl;
-                trailerModal.classList.remove('hidden');
-                trailerModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
+            // Trending backdrops rotation (using server-provided data)
+            // Note: This is handled by the server-side template, but we need to handle it in JavaScript
+            // The server will render the backdrop paths directly in the HTML
 
-            closeModal.addEventListener('click', () => {
-                trailerModal.classList.add('hidden');
-                trailerModal.classList.remove('active');
-                trailerIframe.src = '';
-                document.body.style.overflow = '';
-            });
+            let currentBackdropIndex = 0;
+            const heroBackdrop = document.getElementById('dynamic-hero-backdrop');
 
-            trailerModal.addEventListener('click', (e) => {
-                if (e.target === trailerModal) {
-                    trailerModal.classList.add('hidden');
-                    trailerModal.classList.remove('active');
-                    trailerIframe.src = '';
-                    document.body.style.overflow = '';
+            function rotateBackdropImage() {
+                if (trendingBackdrops.length > 1) {
+                    currentBackdropIndex = (currentBackdropIndex + 1) % trendingBackdrops.length;
+                    const nextImage = new Image();
+                    nextImage.onload = function() {
+                        heroBackdrop.style.backgroundImage = `url('${trendingBackdrops[currentBackdropIndex]}')`;
+                    };
+                    nextImage.src = trendingBackdrops[currentBackdropIndex];
+                }
+            }
+            
+            // Change backdrop every 8 seconds if we have multiple backdrops
+            if (trendingBackdrops.length > 1) {
+                setInterval(rotateBackdropImage, 8000);
+            }
+
+            // Autocomplete
+            const searchInput = document.getElementById('search-input');
+            const autocompleteItems = document.getElementById('autocomplete-items');
+
+            searchInput.addEventListener('input', async function() {
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    autocompleteItems.classList.add('hidden');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/autocomplete?query=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+
+                    if (data.movies.length === 0 && data.shows.length === 0 && data.people.length === 0) {
+                        autocompleteItems.classList.add('hidden');
+                        return;
+                    }
+
+                    autocompleteItems.innerHTML = '';
+
+                    // Movies
+                    data.movies.filter(movie => movie.poster_path).forEach(movie => {
+                        const item = document.createElement('div');
+                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                        item.innerHTML = `
+                            <img src="https://image.tmdb.org/t/p/w92${movie.poster_path}" alt="${movie.title}" class="w-10 h-15 object-cover rounded">
+                            <div>
+                                <p class="text-[#F5F6F5] text-sm">${movie.title}</p>
+                                <p class="text-[#A9B8B5] text-xs">${movie.release_date || 'N/A'}</p>
+                            </div>
+                        `;
+                        item.addEventListener('click', () => {
+                            window.location.href = `/movie/${movie.id}`;
+                        });
+                        autocompleteItems.appendChild(item);
+                    });
+
+                    // TV Shows
+                    data.shows.filter(show => show.poster_path).forEach(show => {
+                        const item = document.createElement('div');
+                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                        item.innerHTML = `
+                            <img src="https://image.tmdb.org/t/p/w92${show.poster_path}" alt="${show.name}" class="w-10 h-15 object-cover rounded">
+                            <div>
+                                <p class="text-[#F5F6F5] text-sm">${show.name}</p>
+                                <p class="text-[#A9B8B5] text-xs">${show.first_air_date || 'N/A'}</p>
+                            </div>
+                        `;
+                        item.addEventListener('click', () => {
+                            window.location.href = `/tv/${show.id}`;
+                        });
+                        autocompleteItems.appendChild(item);
+                    });
+
+                    // People
+                    data.people.filter(person => person.profile_path).forEach(person => {
+                        const item = document.createElement('div');
+                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                        item.innerHTML = `
+                            <img src="https://image.tmdb.org/t/p/w92${person.profile_path}" alt="${person.name}" class="w-10 h-15 object-cover rounded">
+                            <div>
+                                <p class="text-[#F5F6F5] text-sm">${person.name}</p>
+                                <p class="text-[#A9B8B5] text-xs">${person.known_for || 'N/A'}</p>
+                            </div>
+                        `;
+                        item.addEventListener('click', () => {
+                            window.location.href = `/actor/${person.id}`;
+                        });
+                        autocompleteItems.appendChild(item);
+                    });
+
+                    if (autocompleteItems.children.length > 0) {
+                        autocompleteItems.classList.remove('hidden');
+                    } else {
+                        autocompleteItems.classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error fetching autocomplete:', error);
+                    autocompleteItems.classList.add('hidden');
                 }
             });
 
-            // View Full Cast functionality
-            const viewFullCastButton = document.getElementById('view-full-cast');
-            const castGrid = document.getElementById('cast-grid');
-            const fullCastGrid = document.getElementById('full-cast-grid');
-            
-            if (viewFullCastButton && fullCastGrid) {
-                viewFullCastButton.addEventListener('click', () => {
-                    if (fullCastGrid.classList.contains('hidden')) {
-                        fullCastGrid.classList.remove('hidden');
-                        viewFullCastButton.textContent = 'Show Less';
-                    } else {
-                        fullCastGrid.classList.add('hidden');
-                        viewFullCastButton.textContent = 'View Full Cast & Crew';
-                    }
-                });
-            }
-
-            // Read All Reviews functionality
-            const readAllReviewsButton = document.getElementById('read-all-reviews');
-            const reviewsGrid = document.getElementById('reviews-grid');
-            const fullReviewsGrid = document.getElementById('full-reviews-grid');
-            
-            if (readAllReviewsButton && fullReviewsGrid) {
-                readAllReviewsButton.addEventListener('click', () => {
-                    if (fullReviewsGrid.classList.contains('hidden')) {
-                        fullReviewsGrid.classList.remove('hidden');
-                        readAllReviewsButton.textContent = 'Show Less';
-                    } else {
-                        fullReviewsGrid.classList.add('hidden');
-                        readAllReviewsButton.textContent = 'Read All Reviews';
-                    }
-                });
-            }
+            // Hide autocomplete when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !autocompleteItems.contains(e.target)) {
+                    autocompleteItems.classList.add('hidden');
+                }
+            });
         });
     </script>
 </body>
