@@ -26,8 +26,6 @@ This is a Flask web application that allows users to discover and get recommenda
 
 ## How it's working
 
-![Chatbot Diagram](images/chatbot_Diagram.png)
-
 ![Chat API](images/chatapi.png)
 
 ![Website Architecture](images/Website_arch.png)
@@ -35,18 +33,6 @@ This is a Flask web application that allows users to discover and get recommenda
 ## Live Demo
 
 Check out the live demo deployed on Render [here](https://tv-movie-recommendations.onrender.com/).
-
-![Movie Recommender System 1](images/Movie-Recommender-System%201.png)
-
-![Movie Recommender System 2](images/Movie-Recommender-System%202.png)
-
-![TV Show Recommender System](images/TV-Show-Recommender-System%201.png)
-
-![Details Page](images/Details%20page.png)
-
-![Actor Profile - Tom Cruise](images/Tom-Cruise-ActorHub-04-16-2025_11_25_PM.png)
-
-![User Profile Page](images/Profile-MovieHub.jpg)
 
 ## Getting Started
 
