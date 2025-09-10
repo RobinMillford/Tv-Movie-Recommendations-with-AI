@@ -10,6 +10,7 @@ A Flask web application for discovering and getting recommendations for movies, 
 - **AI Chatbot**: Get intelligent recommendations using multiple LLM models via Groq API
 - **Personalized Experience**: User profiles with watchlists, wishlists, and viewing history
 - **Detailed Information**: Comprehensive pages for movies, TV shows, and actors
+- **Multiple Authentication Options**: Traditional username/password and Google OAuth
 - **Persistent Storage**: PostgreSQL database and Cloudinary for profile images
 
 ## Live Demo
@@ -24,6 +25,7 @@ Check out the live demo on Render: [https://tv-movie-recommendations-with-ai.onr
 - API keys for TMDb, Groq, and optionally NewsAPI
 - PostgreSQL database
 - Cloudinary account (free tier available)
+- Google OAuth credentials (for Google login)
 
 ### Installation
 
@@ -58,15 +60,30 @@ Check out the live demo on Render: [https://tv-movie-recommendations-with-ai.onr
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
+
+   # Google OAuth (optional)
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
    ```
 
-5. Run the application:
+5. Google OAuth Setup:
+
+   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Enable the Google+ API
+   - Go to "Credentials" and create an OAuth 2.0 Client ID
+   - Set authorized redirect URIs to:
+     - http://localhost:5000/google/callback (for local development)
+     - https://yourdomain.com/google/callback (for production)
+   - Copy the Client ID and Client Secret to your `.env` file
+
+6. Run the application:
 
    ```bash
    python app.py
    ```
 
-6. Open `http://127.0.0.1:5000` in your browser.
+7. Open `http://127.0.0.1:5000` in your browser.
 
 ## Technical Implementation
 
@@ -75,6 +92,7 @@ Check out the live demo on Render: [https://tv-movie-recommendations-with-ai.onr
 - Secure user registration and login with Flask-Login
 - Password hashing and validation requirements
 - "Remember Me" functionality for 30-day persistent sessions
+- Google OAuth integration for easy sign-in
 - Profile management with customizable information
 
 ### Cloudinary Image Handling
@@ -116,3 +134,4 @@ Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 - [PostgreSQL](https://www.postgresql.org/) for database
 - [Cloudinary](https://cloudinary.com/) for image handling
+- [Google OAuth](https://developers.google.com/identity/protocols/oauth2) for authentication

@@ -13,6 +13,10 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
+# Google OAuth Configuration
+app.config['GOOGLE_CLIENT_ID'] = os.getenv("GOOGLE_CLIENT_ID")
+app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET")
+
 # Configure database with environment-aware SSL support
 database_url = os.getenv("DATABASE_URL")
 if database_url:
@@ -62,11 +66,13 @@ from routes.main import main
 from routes.chat import chat
 from routes.details import details
 from routes.auth import auth
+from routes.oauth import oauth
 
 app.register_blueprint(auth)
 app.register_blueprint(main)
 app.register_blueprint(chat)
 app.register_blueprint(details)
+app.register_blueprint(oauth)
 
 # Initialize database after blueprints to avoid circular imports
 from models import db, User

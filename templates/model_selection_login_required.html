@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @keyframes gradient {
             0% { background-position: 0% 50%; }
@@ -70,39 +71,63 @@
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 2rem;
-            border-radius: 1rem;
             text-align: center;
-            max-width: 600px;
+            max-width: 500px;
             margin: 4rem auto;
         }
 
         .login-button {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
             border: none;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 500;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease;
             text-align: center;
             display: inline-block;
             text-decoration: none;
-            margin: 1rem;
+            margin: 10px;
+            min-width: 140px;
         }
 
         .login-button:hover {
-            background: linear-gradient(135deg, #4338ca, #4f46e5);
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
         }
 
-        .login-button:active {
-            transform: scale(0.98);
+        .oauth-button {
+            background: white;
+            color: #374151;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            margin: 10px;
+            min-width: 140px;
+        }
+
+        .oauth-button:hover {
+            background: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
         }
 
         .section-heading {
@@ -136,6 +161,12 @@
         @media (max-width: 640px) {
             .section-heading {
                 font-size: 1.5rem;
+            }
+            
+            .login-button, .oauth-button {
+                display: block;
+                margin: 10px auto;
+                width: 80%;
             }
         }
     </style>
@@ -180,6 +211,28 @@
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="{{ url_for('auth.login') }}" class="login-button">Login</a>
                 <a href="{{ url_for('auth.register') }}" class="login-button">Register</a>
+            </div>
+            
+            <div class="my-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-gray-800 text-gray-400">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ url_for('oauth.google_login') }}" class="oauth-button">
+                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    </svg>
+                    Google
+                </a>
             </div>
             
             <p class="text-gray-400 text-sm mt-6">Don't have an account? Register for free to access all MovieHub features including personalized recommendations, watchlists, and our AI chat assistant.</p>
