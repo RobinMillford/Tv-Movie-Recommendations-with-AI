@@ -31,10 +31,10 @@ def chat_page():
     # Get the model name from the query parameter, or use default
     model_name = request.args.get("model", "llama-3.3-70b-versatile")
     
-    # Clear session history for this user on page load
+    # Preserve chat history instead of clearing it to maintain context
     session_id = request.remote_addr
-    if session_id in chat_sessions:
-        del chat_sessions[session_id]
+    if session_id not in chat_sessions:
+        chat_sessions[session_id] = []
         
     return render_template("chat.html", model=model_name)
 
@@ -322,48 +322,80 @@ def chat_api():
         return jsonify({"reply": bot_reply})
 
     # Analysis for movies and TV shows with improved handling for new releases
-    llm_prompt = f"""
-    You are an expert text analyzer. Your task is to extract **movie**, **TV show**, **anime movie**, and **anime series** names along with their release years from the chatbot response.
-    **Instructions:**
-    - Identify and extract **movie titles**, including **anime movies**, if they exist.
-    - Identify and extract **TV show titles**, including **anime series**, if they exist.
-    - If a title has a **release year** mentioned in the response, extract that too.
-    - If no year is mentioned, return null for that title.
-    - If no movies, anime movies, TV shows, or anime series are found, return an empty list for both.
-    - Return only **valid JSON output**, and **do NOT add any extra text or explanations**.
-    **Example JSON Format:**
-    {{
-        "movies": [
-            {{"title": "Inception", "year": 2010}},
-            {{"title": "Your Name", "year": 2016}}
-        ],
-        "tv_shows": [
-            {{"title": "Breaking Bad", "year": 2008}},
-            {{"title": "Attack on Titan", "year": 2013}}
-        ]
-    }}
-    **Chatbot Response to Process:**
-    "{bot_reply}"
-    """
-    analysis_response = get_chatbot(model_name).invoke(llm_prompt)
-    try:
-        # Clean the JSON response by removing any markdown code block syntax
-        cleaned_content = clean_json_response(analysis_response.content)
-        analysis_data = json.loads(cleaned_content)
-        movie_data = analysis_data.get("movies", [])
-        tv_show_data = analysis_data.get("tv_shows", [])
-    except json.JSONDecodeError:
-        print(f"Invalid JSON from analysis: {analysis_response.content}")
-        # Special handling for the safety model
-        if is_safety_model_response(analysis_response.content, model_name):
-            movie_data = []
-            tv_show_data = []
-        else:
-            # Fallback to LLM-based extraction as a more robust approach
-            movie_data, tv_show_data = extract_media_with_llm(bot_reply, model_name)
+    # Check if the response is actually about specific media or just general questions
+    should_extract_media = True
+    
+    # Don't extract media for general questions or prompts
+    general_question_patterns = [
+        "what kind of mood", "preferred genres", "recent titles", "streaming services", 
+        "looking for a movie", "tv series", "mood you're in", "genres you prefer",
+        "any recent titles", "streaming platforms", "what would you like",
+        "mood are you in", "tell me more", "could you let me know",
+        "would you like", "do you have", "any particular", "specifically interested"
+    ]
+    
+    # Convert bot_reply to lowercase for pattern matching
+    bot_reply_lower = bot_reply.lower()
+    
+    # Check if this is a general question rather than a media recommendation
+    for pattern in general_question_patterns:
+        if pattern in bot_reply_lower:
+            should_extract_media = False
+            break
+    
+    # Also check if this looks like a question asking for user input
+    if (bot_reply_lower.endswith("?") and len(bot_reply_lower.split()) < 15) or \
+       ("?" in bot_reply_lower and "suggest" not in bot_reply_lower and "recommend" not in bot_reply_lower):
+        should_extract_media = False
+    
+    if should_extract_media:
+        llm_prompt = f"""
+        You are an expert text analyzer. Your task is to extract **movie**, **TV show**, **anime movie**, and **anime series** names along with their release years from the chatbot response.
+        **Instructions:**
+        - Identify and extract **movie titles**, including **anime movies**, if they exist.
+        - Identify and extract **TV show titles**, including **anime series**, if they exist.
+        - If a title has a **release year** mentioned in the response, extract that too.
+        - If no year is mentioned, return null for that title.
+        - If no movies, anime movies, TV shows, or anime series are found, return an empty list for both.
+        - Return only **valid JSON output**, and **do NOT add any extra text or explanations**.
+        **Example JSON Format:**
+        {{
+            "movies": [
+                {{"title": "Inception", "year": 2010}},
+                {{"title": "Your Name", "year": 2016}}
+            ],
+            "tv_shows": [
+                {{"title": "Breaking Bad", "year": 2008}},
+                {{"title": "Attack on Titan", "year": 2013}}
+            ]
+        }}
+        **Chatbot Response to Process:**
+        "{bot_reply}"
+        """
+        analysis_response = get_chatbot(model_name).invoke(llm_prompt)
+        try:
+            # Clean the JSON response by removing any markdown code block syntax
+            cleaned_content = clean_json_response(analysis_response.content)
+            analysis_data = json.loads(cleaned_content)
+            movie_data = analysis_data.get("movies", [])
+            tv_show_data = analysis_data.get("tv_shows", [])
+        except json.JSONDecodeError:
+            print(f"Invalid JSON from analysis: {analysis_response.content}")
+            # Special handling for the safety model
+            if is_safety_model_response(analysis_response.content, model_name):
+                movie_data = []
+                tv_show_data = []
+            else:
+                # Fallback to LLM-based extraction as a more robust approach
+                movie_data, tv_show_data = extract_media_with_llm(bot_reply, model_name)
+    else:
+        # Don't extract media for general questions
+        movie_data = []
+        tv_show_data = []
 
     # If we still don't have media data but the response mentions specific titles, try to extract them
-    if not movie_data and not tv_show_data:
+    # Only do this for actual recommendations, not general questions
+    if should_extract_media and not movie_data and not tv_show_data:
         # Use the improved title extraction function
         from api.chatbot import extract_media_titles, identify_media_type
         
@@ -399,7 +431,8 @@ def chat_api():
                 tv_show_data.append({"title": clean_title, "year": year})
 
     # Additional fallback: If we still don't have data, try a more direct extraction
-    if not movie_data and not tv_show_data:
+    # Only for actual recommendations
+    if should_extract_media and not movie_data and not tv_show_data:
         # Try to extract any movie/TV show-like patterns directly from the response
         from api.chatbot import extract_media_titles
         direct_titles = extract_media_titles(bot_reply)
