@@ -8,3 +8,11 @@ instance/
 myenv
 .extra/
 .pytest_cache/
+
+# Data stored on Hugging Face only
+data/
+chroma_db/
+chroma_db_test/
+*.json.gz
+*.sqlite3.gz
+hf_upload_temp/
