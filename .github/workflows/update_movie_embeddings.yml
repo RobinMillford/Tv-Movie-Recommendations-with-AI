@@ -27,6 +27,8 @@ jobs:
       - name: Collect new movies from TMDb
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python scripts/collect_media.py
 
@@ -41,7 +43,7 @@ jobs:
       - name: Upload to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
         run: |
           python scripts/upload_to_huggingface.py
 
