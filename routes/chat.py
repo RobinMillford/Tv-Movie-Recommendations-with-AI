@@ -65,9 +65,9 @@ def chat_api():
 Query: "{user_message}"
 
 Determine:
-1. Is this asking about RECENT/NEW content (2022-2025)? Consider:
+1. Is this asking about RECENT/NEW content (2022-)? Consider:
    - Words like: recent, new, latest, newest, current, modern, trending, fresh, hot
-   - Years: 2022, 2023, 2024, 2025
+   - Years: 2022, 2023, 2024, 2025, more
    - Phrases: just released, came out, this year, brand new, popular now
    - Misspellings: recnt, latst, etc.
    
@@ -218,9 +218,11 @@ User: {user_message}"""
         tv_show_data = []
 
     # Fallback extraction if needed
+    # Fallback: Use regex extraction ONLY if LLM extraction returned nothing
     if should_extract_media and not movie_data and not tv_show_data:
         from api.chatbot import extract_media_titles, identify_media_type
         
+        # Extract potential titles using regex patterns
         potential_titles = extract_media_titles(bot_reply)
         year_matches = re.findall(r'\b(19|20)\d{2}\b', bot_reply)
         
@@ -249,13 +251,14 @@ User: {user_message}"""
         ]
         return jsonify({"reply": bot_reply})
 
-    # Fetch media details from TMDb
+    # Fetch media details from TMDb (OPTIMIZED: 2 API calls max instead of 3)
     media_data = {"movies": [], "tv_shows": []}
     for media_list, media_type, key in [(movie_data, "movie", "movies"), (tv_show_data, "tv", "tv_shows")]:
         for media in media_list:
             title = media["title"]
             year = media["year"]
             
+            # First attempt: Search with year if available
             url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true"
             if year:
                 url += f"&year={year}"
@@ -263,16 +266,13 @@ User: {user_message}"""
             response = requests.get(url).json()
             results = response.get("results", [])
             
+            # Second attempt: Retry without year if first attempt had year and failed
             if not results and year:
                 url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true"
                 response = requests.get(url).json()
                 results = response.get("results", [])
             
-            if not results:
-                url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={TMDB_API_KEY}&query={title}&page=1&include_adult=true&include_video=true"
-                response = requests.get(url).json()
-                results = response.get("results", [])
-            
+            # If still no results, add placeholder
             if not results:
                 print(f"⚠️ No {media_type} results found for: {title}")
                 media_data[key].append({
