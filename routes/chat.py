@@ -57,21 +57,31 @@ def chat_api():
         for msg in formatted_history[:-1]
     )
     
-    # SIMPLIFIED RAG STRATEGY: Only use RAG for explicit recent title queries
+    
+    # SMART RAG STRATEGY: Detect if query is about recent/new content
+    # Keywords that indicate user wants recent content
+    recent_keywords = ['recent', 'new', 'latest', '2024', '2025', '2023', 'this year', 'just released', 'just came out']
+    query_lower = user_message.lower()
+    mentions_recent = any(keyword in query_lower for keyword in recent_keywords)
+    
+    # Extract title and year using LLM
     analysis_prompt = f"""Extract media information from this query:
 
 Query: "{user_message}"
 
-If the user mentions a SPECIFIC movie/TV show title with a year (2022-2025), extract it.
-Otherwise, return null.
+Extract:
+1. Any specific movie/TV show title mentioned
+2. Year if mentioned
+3. Whether query asks about recent/new content
 
-Return JSON: {{"title": "..." or null, "year": "..." or null}}
+Return JSON: {{"title": "..." or null, "year": "..." or null, "is_recent_query": true/false}}
 
 Examples:
-- "movie like matrix" → {{"title": null, "year": null}}
-- "tv show like 'Task' from 2025" → {{"title": "Task", "year": "2025"}}
-- "suggest motivational movies" → {{"title": null, "year": null}}
-- "suggest some more" → {{"title": null, "year": null}}
+- "movie like matrix" → {{"title": null, "year": null, "is_recent_query": false}}
+- "tv show like Black Rabbit" → {{"title": "Black Rabbit", "year": null, "is_recent_query": false}}
+- "suggest me recent tv show like 'All Her Fault'" → {{"title": "All Her Fault", "year": null, "is_recent_query": true}}
+- "new movies from 2025" → {{"title": null, "year": "2025", "is_recent_query": true}}
+- "what came out this year" → {{"title": null, "year": null, "is_recent_query": true}}
 
 IMPORTANT: Return ONLY the JSON object, no markdown, no explanations."""
 
@@ -81,29 +91,41 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no explanations."""
         
         source_title = analysis_data.get("title")
         source_year = analysis_data.get("year")
+        is_recent_query = analysis_data.get("is_recent_query", False)
         
-        # Check if year is recent (2022-2025)
-        needs_rag = False
+        # Trigger RAG if:
+        # 1. Query mentions recent keywords OR
+        # 2. LLM detected it's a recent query OR
+        # 3. Title with year 2022-2025 mentioned
+        needs_rag = mentions_recent or is_recent_query
+        
         if source_title and source_year:
             try:
                 year_int = int(source_year)
                 if 2022 <= year_int <= 2025:
                     needs_rag = True
-                    print(f"🤖 LLM: Extracted recent title: '{source_title}' ({source_year})")
             except:
                 pass
         
-        if not needs_rag:
-            print(f"🤖 LLM: No recent title found, using general knowledge")
+        if needs_rag:
+            if source_title:
+                print(f"🤖 LLM: Recent content query detected - '{source_title}' ({source_year or 'any year'})")
+            else:
+                print(f"🤖 LLM: Recent content query detected - triggering RAG")
+        else:
+            print(f"🤖 LLM: General query - using LLM knowledge first")
         
     except Exception as e:
-        print(f"⚠️ LLM analysis failed: {e}")
-        needs_rag = False
+        print(f"⚠️  LLM analysis failed: {e}")
+        # Fallback to keyword detection
+        needs_rag = mentions_recent
         source_title = None
         source_year = None
+        if needs_rag:
+            print(f"🤖 Fallback: Recent keywords detected - triggering RAG")
     
     if needs_rag:
-        # Use RAG for recent media
+        # Use RAG for recent content queries
         rag_prompt, rag_used, _ = enhance_prompt_with_rag(
             user_message, 
             chat_history_str,
@@ -114,6 +136,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no explanations."""
             bot_response = get_chatbot(model_name).invoke(rag_prompt)
             bot_reply = f"🎬 *Using recent media database*\n\n{bot_response.content.strip()}"
         else:
+            # RAG didn't find it, use LLM knowledge
             bot_response = get_chatbot(model_name).invoke(f"Conversation:\n{chat_history_str}\n\nUser: {user_message}")
             bot_reply = bot_response.content.strip()
     else:
