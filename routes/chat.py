@@ -59,8 +59,28 @@ def chat_api():
     
     
     # SMART RAG STRATEGY: Detect if query is about recent/new content
-    # Keywords that indicate user wants recent content
-    recent_keywords = ['recent', 'new', 'latest', '2024', '2025', '2023', 'this year', 'just released', 'just came out']
+    # Keywords that indicate user wants recent content (including common misspellings)
+    recent_keywords = [
+        # Time-based
+        'recent', 'new', 'latest', 'newest', 'current', 'modern',
+        'this year', 'this month', 'today', 'now',
+        'just released', 'just came out', 'just dropped', 'just launched',
+        
+        # Years
+        '2025', '2024', '2023', '2022',
+        
+        # Common misspellings
+        'recnt', 'resent', 'reacent', 'latst', 'lates',
+        
+        # Variations
+        'brand new', 'fresh', 'hot', 'trending', 'popular now',
+        'came out', 'released', 'premiered', 'debuted',
+        'upcoming', 'coming soon', 'coming out',
+        
+        # Slang/casual
+        'what\'s new', 'whats new', 'any new', 'got any new',
+        'show me new', 'show me recent', 'show me latest',
+    ]
     query_lower = user_message.lower()
     mentions_recent = any(keyword in query_lower for keyword in recent_keywords)
     
