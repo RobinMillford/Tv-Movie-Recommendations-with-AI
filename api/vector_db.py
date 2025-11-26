@@ -25,24 +25,21 @@ class MovieVectorDB:
         Initialize the vector database with Chroma Cloud.
         Requires environment variables:
         - CHROMA_API_KEY
-        - CHROMA_TENANT
-        - CHROMA_DATABASE
+        - CHROMA_CLOUD_URL (optional, defaults to api.trychroma.com)
         """
         # Get Chroma Cloud credentials from environment
         api_key = os.getenv("CHROMA_API_KEY")
-        tenant = os.getenv("CHROMA_TENANT")
-        database = os.getenv("CHROMA_DATABASE")
+        cloud_url = os.getenv("CHROMA_CLOUD_URL", "https://api.trychroma.com")
         
-        if not all([api_key, tenant, database]):
-            logger.error("Missing Chroma Cloud credentials! Set CHROMA_API_KEY, CHROMA_TENANT, and CHROMA_DATABASE")
-            raise ValueError("Chroma Cloud credentials not configured")
+        if not api_key:
+            logger.error("Missing CHROMA_API_KEY! Set environment variable")
+            raise ValueError("Chroma Cloud API key not configured")
         
-        # Initialize ChromaDB Cloud client
-        logger.info(f"Connecting to Chroma Cloud (tenant: {tenant}, database: {database})")
-        self.client = chromadb.CloudClient(
-            api_key=api_key,
-            tenant=tenant,
-            database=database
+        # Initialize ChromaDB Cloud client using HttpClient (v2 API)
+        logger.info(f"Connecting to Chroma Cloud at {cloud_url}")
+        self.client = chromadb.HttpClient(
+            host=cloud_url,
+            headers={"Authorization": f"Bearer {api_key}"}
         )
         
         # Get or create collection for movies
