@@ -1,137 +1,147 @@
-# Movie and TV Show Recommendation App With AI
+# FrameIQ - Intelligent Entertainment Discovery
 
-A Flask web application for discovering and getting recommendations for movies, TV shows, and actors using TMDb API and an AI-powered chatbot via Groq API.
+FrameIQ (formerly MovieHub) is a next-generation entertainment discovery platform that leverages advanced AI to provide hyper-personalized recommendations for movies, TV shows, and anime.
 
-![MovieTvHub Interface](images/MovieTvHub-Discover-Movies-Shows-People-04-16-2025_11_22_PM.png)
+![FrameIQ Interface](images/MovieTvHub-Discover-Movies-Shows-People-04-16-2025_11_22_PM.png)
 
-## Key Features
+## 🌐 Live Demo
 
-- **Browse & Search**: Explore movies, TV shows, and actors by genre or through search
-- **AI Chatbot**: Get intelligent recommendations using multiple LLM models via Groq API
-- **Personalized Experience**: User profiles with watchlists, wishlists, and viewing history
-- **Detailed Information**: Comprehensive pages for movies, TV shows, and actors
-- **Multiple Authentication Options**: Traditional username/password and Google OAuth
-- **Persistent Storage**: PostgreSQL database and Cloudinary for profile images
+Check out the live demo on Google Cloud Run: [https://movie-recommendations-344233295407.asia-south1.run.app/](https://movie-recommendations-344233295407.asia-south1.run.app/)
 
-## Live Demo
+## 🚀 Key Features
 
-Check out the live demo on Render: [https://tv-movie-recommendations-with-ai.onrender.com/](https://tv-movie-recommendations.onrender.com/)
+### 🧠 Advanced AI Chatbot (RAG + Hybrid Search)
 
-## Getting Started
+- **Intelligent Retrieval:** Uses **Retrieval-Augmented Generation (RAG)** to query a vector database of over 10,000+ movies and TV shows.
+- **Hybrid Search:** Combines semantic vector search (ChromaDB) with keyword search (BM25) for high-precision results.
+- **Smart Fallback System:**
+  1.  **LLM Knowledge:** First checks the LLM's internal knowledge.
+  2.  **RAG Context:** Retrieves specific details from the vector database.
+  3.  **TMDb Live Data:** Falls back to The Movie Database (TMDb) API for real-time data on new releases or obscure titles.
+- **Anime Detection:** Specialized logic to detect and handle anime queries effectively.
+
+### 🎨 Premium User Experience
+
+- **FrameIQ Branding:** Sophisticated Purple/Gold/Teal color scheme with particle background animations.
+- **Responsive Design:** Fully responsive UI built with Tailwind CSS.
+- **Personalized Profiles:** Watchlists, wishlists, and viewing history tracking.
+
+### ☁️ Modern Cloud Architecture
+
+- **Vector Storage:** **ChromaDB Cloud** for scalable, serverless vector storage.
+- **Deployment:** **Google Cloud Run** for serverless, auto-scaling application hosting.
+- **Database:** PostgreSQL for robust user and media data management.
+- **Image Hosting:** Cloudinary for optimized profile image delivery.
+
+## 🛠️ Technical Implementation
+
+### AI & RAG Architecture
+
+The core of FrameIQ is its intelligent chat system:
+
+1.  **User Query:** The user asks a question (e.g., "Find me a sci-fi movie like Interstellar").
+2.  **Intent Analysis:** The system analyzes if the query is about movies, TV shows, or anime.
+3.  **Hybrid Search:**
+    - **Dense Retrieval:** Uses `all-MiniLM-L6-v2` embeddings to find semantically similar content in ChromaDB.
+    - **Sparse Retrieval:** Uses BM25 to match specific keywords.
+    - **Reranking:** Combines results using Reciprocal Rank Fusion (RRF).
+4.  **Context Assembly:** Relevant context is fed into the LLMs.
+5.  **Response Generation:** The LLM generates a natural language response.
+6.  **TMDb Fallback:** If RAG confidence is low, the system queries TMDb API directly.
+
+### Tech Stack
+
+- **Backend:** Flask (Python)
+- **Frontend:** HTML5, Tailwind CSS, JavaScript (Vanilla)
+- **AI/ML:** Groq API (Multiple LLMS), ChromaDB (Vector DB), Sentence Transformers
+- **Data Sources:** TMDb API, Hugging Face Datasets
+- **Infrastructure:** Google Cloud Run, PostgreSQL, Cloudinary
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Python 3.7+
-- API keys for TMDb, Groq, and optionally NewsAPI
-- PostgreSQL database
-- Cloudinary account (free tier available)
-- Google OAuth credentials (for Google login)
+- Python 3.9+
+- API Keys: TMDb, Groq, Cloudinary
+- ChromaDB Cloud Tenant/Database credentials
+- PostgreSQL Database
 
 ### Installation
 
-1. Clone the repository:
+1.  **Clone the repository:**
 
-   ```bash
-   git clone https://github.com/RobinMillford/tv-movie-recommendations.git
-   cd Tv-Movie-Recommendations-with-AI
-   ```
+    ```bash
+    git clone https://github.com/RobinMillford/tv-movie-recommendations.git
+    cd Tv-Movie-Recommendations-with-AI
+    ```
 
-2. Create and activate a virtual environment:
+2.  **Set up Virtual Environment:**
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # Windows: venv\Scripts\activate
+    ```
 
-3. Install dependencies:
+3.  **Install Dependencies:**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-4. Create a `.env` file with your API keys:
+4.  **Configure Environment Variables:**
+    Create a `.env` file:
 
-   ```env
-   SECRET_KEY=your_secret_key
-   TMDB_API_KEY=your_tmdb_api_key
-   GROQ_API_KEY=your_groq_api_key
-   NEWS_API_KEY=your_newsapi_key
-   DATABASE_URL=postgresql://username:password@localhost:5432/moviehub
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
+    ```env
+    SECRET_KEY=your_secret_key
+    TMDB_API_KEY=your_tmdb_api_key
+    GROQ_API_KEY=your_groq_api_key
+    DATABASE_URL=postgresql://user:pass@host:5432/db
+    CLOUDINARY_CLOUD_NAME=your_cloud_name
+    CLOUDINARY_API_KEY=your_api_key
+    CLOUDINARY_API_SECRET=your_api_secret
 
-   # Google OAuth (optional)
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   ```
+    # ChromaDB Cloud
+    CHROMA_CLOUD_TENANT=your_tenant
+    CHROMA_CLOUD_DATABASE=your_database
+    CHROMA_CLOUD_EMAIL=your_email
+    CHROMA_CLOUD_PASSWORD=your_password
+    ```
 
-5. Google OAuth Setup:
+5.  **Run the Application:**
+    ```bash
+    python app.py
+    ```
 
-   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select an existing one
-   - Enable the Google+ API
-   - Go to "Credentials" and create an OAuth 2.0 Client ID
-   - Set authorized redirect URIs to:
-     - http://localhost:5000/google/callback (for local development)
-     - https://yourdomain.com/google/callback (for production)
-   - Copy the Client ID and Client Secret to your `.env` file
+## ☁️ Deployment
 
-6. Run the application:
+### Google Cloud Run
 
-   ```bash
-   python app.py
-   ```
+FrameIQ is optimized for Google Cloud Run:
 
-7. Open `http://127.0.0.1:5000` in your browser.
+1.  **Containerize:** `Dockerfile` is configured for production.
+2.  **Build & Push:**
+    ```bash
+    gcloud builds submit --tag gcr.io/PROJECT_ID/frameiq-app
+    ```
+3.  **Deploy:**
+    ```bash
+    gcloud run deploy frameiq-app --image gcr.io/PROJECT_ID/frameiq-app --platform managed
+    ```
 
-## Technical Implementation
+### ChromaDB Cloud
 
-### Authentication & User Management
+Vector data is hosted on ChromaDB Cloud, ensuring persistence and scalability without managing local vector stores.
 
-- Secure user registration and login with Flask-Login
-- Password hashing and validation requirements
-- "Remember Me" functionality for 30-day persistent sessions
-- Google OAuth integration for easy sign-in
-- Profile management with customizable information
+## 🤝 Contributing
 
-### Cloudinary Image Handling
+Contributions are welcome! Please submit a Pull Request or open an Issue.
 
-- Profile images uploaded directly to Cloudinary with smart transformations
-- 300x300px resizing with face detection
-- Automatic quality optimization and format conversion
-- CDN delivery for faster loading
-- Backward compatibility with existing local images
+## 📄 License
 
-### AI Chatbot
+AGPL-3.0 license. See [LICENSE](LICENSE) for details.
 
-- Multiple LLM models via Groq API (LLaMA 3.3, LLaMA 3.1, etc.)
-- Authentication protection (only for logged-in users)
-- TMDb integration for fetching posters and details
-- Enhanced handling of new and upcoming releases
-- Theme-based recommendations from movie/TV show overviews
+## 🙏 Acknowledgements
 
-### Database Architecture
-
-PostgreSQL database with:
-
-- User accounts and profile information
-- Media tracking (watchlist, wishlist, viewing history)
-- Many-to-many relationships between users and media items
-
-## Contributing
-
-Submit issues or enhancement requests via GitHub. Pull requests are welcome!
-
-## License
-
-Licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-## Acknowledgements
-
-- [TMDb API](https://www.themoviedb.org/documentation/api)
-- [Groq](https://groq.com/) for AI chatbot functionality
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [PostgreSQL](https://www.postgresql.org/) for database
-- [Cloudinary](https://cloudinary.com/) for image handling
-- [Google OAuth](https://developers.google.com/identity/protocols/oauth2) for authentication
+- [TMDb](https://www.themoviedb.org/) for the extensive media database.
+- [Groq](https://groq.com/) for ultra-fast LLM inference.
+- [Chroma](https://www.trychroma.com/) for vector search capabilities.

@@ -1,911 +1,1597 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <title>MovieTvHub - Discover Movies, Shows & People</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+    />
+    <title>FrameIQ - Intelligent Entertainment Discovery</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/frameiq-brand.css') }}"
+    />
     <style>
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
         }
-
-        .animate-gradient {
-            background: linear-gradient(-45deg, #0A2F35, #1A4A4F, #2B6565, #1A4A4F);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+        50% {
+          background-position: 100% 50%;
         }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 179, 71, 0.2); /* Subtle orange tint */
+        100% {
+          background-position: 0% 50%;
         }
+      }
 
-        .gradient-text {
-            background: linear-gradient(to right, #FF6F61, #FFB347); /* Coral to Orange */
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      .animate-gradient {
+        background: linear-gradient(-45deg, #0a2f35, #1a4a4f, #2b6565, #1a4a4f);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+      }
 
-        .nav-link a {
-            position: relative;
-            color: #F5F6F5; /* Off-White */
-        }
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 179, 71, 0.2); /* Subtle orange tint */
+      }
 
-        .nav-link a::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #00C4CC; /* Bright Cyan */
-            transition: width 0.3s ease;
-        }
+      .gradient-text {
+        background: linear-gradient(
+          to right,
+          #ff6f61,
+          #ffb347
+        ); /* Coral to Orange */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
 
-        .nav-link a:hover::after {
-            width: 100%;
-        }
+      .nav-link a {
+        position: relative;
+        color: #f5f6f5; /* Off-White */
+      }
 
-        .nav-link a:hover {
-            color: #00C4CC; /* Bright Cyan on hover */
-        }
+      .nav-link a::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #00c4cc; /* Bright Cyan */
+        transition: width 0.3s ease;
+      }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0A2F35; /* Dark Teal */
-            color: #F5F6F5; /* Off-White */
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
+      .nav-link a:hover::after {
+        width: 100%;
+      }
 
+      .nav-link a:hover {
+        color: #00c4cc; /* Bright Cyan on hover */
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #0a2f35; /* Dark Teal */
+        color: #f5f6f5; /* Off-White */
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+
+      .hero-section {
+        position: relative;
+        min-height: 500px;
+        padding-top: 6rem;
+        padding-bottom: 4rem;
+      }
+
+      .hero-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center top;
+        filter: blur(3px);
+        transform: scale(1.03);
+        z-index: -2;
+      }
+
+      .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          rgba(10, 47, 53, 0.9),
+          rgba(10, 47, 53, 0.7)
+        ); /* Dark Teal overlay */
+        z-index: -1;
+      }
+
+      .search-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .search-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      }
+
+      .movie-card,
+      .show-card,
+      .person-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+      }
+
+      .movie-card:hover,
+      .show-card:hover,
+      .person-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      }
+
+      .movie-card h3:hover,
+      .show-card h3:hover,
+      .person-card h3:hover {
+        color: #00c4cc; /* Bright Cyan on hover */
+      }
+
+      .movie-image,
+      .show-image,
+      .person-image {
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        width: 100%;
+      }
+
+      #autocomplete-items {
+        z-index: 1000;
+      }
+
+      #autocomplete-items .hover:bg-indigo-900\/50:hover {
+        background-color: rgba(0, 196, 204, 0.2); /* Cyan hover effect */
+      }
+
+      .search-button {
+        background-color: #ff6f61; /* Coral */
+        transition: background-color 0.3s ease;
+      }
+
+      .search-button:hover {
+        background-color: #00c4cc; /* Bright Cyan */
+      }
+
+      @media (max-width: 768px) {
         .hero-section {
-            position: relative;
-            min-height: 500px;
-            padding-top: 6rem;
-            padding-bottom: 4rem;
+          min-height: 400px;
+          padding-top: 5rem;
+          padding-bottom: 3rem;
         }
-
-        .hero-backdrop {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center top;
-            filter: blur(3px);
-            transform: scale(1.03);
-            z-index: -2;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(10, 47, 53, 0.9), rgba(10, 47, 53, 0.7)); /* Dark Teal overlay */
-            z-index: -1;
-        }
-
-        .search-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .search-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-        }
-
-        .movie-card, .show-card, .person-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
-        }
-
-        .movie-card:hover, .show-card:hover, .person-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-        }
-
-        .movie-card h3:hover, .show-card h3:hover, .person-card h3:hover {
-            color: #00C4CC; /* Bright Cyan on hover */
-        }
-
-        .movie-image, .show-image, .person-image {
-            aspect-ratio: 2/3;
-            object-fit: cover;
-            width: 100%;
-        }
-
-        #autocomplete-items {
-            z-index: 1000;
-        }
-
-        #autocomplete-items .hover:bg-indigo-900\/50:hover {
-            background-color: rgba(0, 196, 204, 0.2); /* Cyan hover effect */
-        }
-
-        .search-button {
-            background-color: #FF6F61; /* Coral */
-            transition: background-color 0.3s ease;
-        }
-
-        .search-button:hover {
-            background-color: #00C4CC; /* Bright Cyan */
-        }
-
-        @media (max-width: 768px) {
-            .hero-section {
-                min-height: 400px;
-                padding-top: 5rem;
-                padding-bottom: 3rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 glass-effect">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="text-2xl font-bold gradient-text">MovieTvHub</div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="/movies" class="nav-link transition-colors">Movies</a>
-                    <a href="/tv_shows" class="nav-link transition-colors">TV Shows</a>
-                    <a href="/news" class="nav-link transition-colors">News</a>
-                    <a href="/model_selection" class="nav-link transition-colors flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        AI Chat
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    {% if current_user.is_authenticated %}
-                        <div class="relative" id="profile-dropdown">
-                            <button id="profile-button" class="flex items-center space-x-1 text-white hover:text-gray-300">
-                                <i class="fas fa-user"></i>
-                                <span>{{ current_user.username }}</span>
-                                <i class="fas fa-caret-down"></i>
-                            </button>
-                            <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden z-10">
-                                <a href="{{ url_for('auth.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
-                                <a href="{{ url_for('main.watchlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Watchlist</a>
-                                <a href="{{ url_for('main.wishlist') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Wishlist</a>
-                                <a href="{{ url_for('main.viewed') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Viewed</a>
-                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm hover:bg-gray-700">Logout</a>
-                            </div>
-                        </div>
-                        <!-- Mobile auth links -->
-                        <div class="md:hidden">
-                            <a href="{{ url_for('auth.profile') }}" class="text-white hover:text-gray-300 mr-2">Profile</a>
-                            <a href="{{ url_for('auth.logout') }}" class="text-white hover:text-gray-300">Logout</a>
-                        </div>
-                    {% else %}
-                        <div class="hidden md:block">
-                            <a href="{{ url_for('auth.login') }}" class="text-white hover:text-gray-300 mr-2">Login</a>
-                            <a href="{{ url_for('auth.register') }}" class="text-white hover:text-gray-300">Register</a>
-                        </div>
-                        <div class="md:hidden">
-                            <a href="{{ url_for('auth.login') }}" class="text-white hover:text-gray-300">Login</a>
-                        </div>
-                    {% endif %}
-                </div>
-                <button class="md:hidden" id="mobile-menu-button">
-                    <svg class="w-6 h-6" fill="none" stroke="#F5F6F5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <div class="frameiq-logo">
+            <div class="frameiq-logo-icon">🧠</div>
+            <div>
+              <div style="font-size: 1.5rem">FrameIQ</div>
+              <div class="frameiq-tagline">
+                Intelligent Entertainment Discovery
+              </div>
             </div>
+          </div>
+          <div class="hidden md:flex space-x-8">
+            <a href="/movies" class="nav-link transition-colors">Movies</a>
+            <a href="/tv_shows" class="nav-link transition-colors">TV Shows</a>
+            <a href="/news" class="nav-link transition-colors">News</a>
+            <a
+              href="/model_selection"
+              class="nav-link transition-colors flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                />
+              </svg>
+              AI Chat
+            </a>
+          </div>
+          <div class="flex items-center space-x-4">
+            {% if current_user.is_authenticated %}
+            <div class="relative" id="profile-dropdown">
+              <button
+                id="profile-button"
+                class="flex items-center space-x-1 text-white hover:text-gray-300"
+              >
+                <i class="fas fa-user"></i>
+                <span>{{ current_user.username }}</span>
+                <i class="fas fa-caret-down"></i>
+              </button>
+              <div
+                id="profile-menu"
+                class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 hidden z-10"
+              >
+                <a
+                  href="{{ url_for('auth.profile') }}"
+                  class="block px-4 py-2 text-sm hover:bg-gray-700"
+                  >Profile</a
+                >
+                <a
+                  href="{{ url_for('main.watchlist') }}"
+                  class="block px-4 py-2 text-sm hover:bg-gray-700"
+                  >Watchlist</a
+                >
+                <a
+                  href="{{ url_for('main.wishlist') }}"
+                  class="block px-4 py-2 text-sm hover:bg-gray-700"
+                  >Wishlist</a
+                >
+                <a
+                  href="{{ url_for('main.viewed') }}"
+                  class="block px-4 py-2 text-sm hover:bg-gray-700"
+                  >Viewed</a
+                >
+                <a
+                  href="{{ url_for('auth.logout') }}"
+                  class="block px-4 py-2 text-sm hover:bg-gray-700"
+                  >Logout</a
+                >
+              </div>
+            </div>
+            <!-- Mobile auth links -->
+            <div class="md:hidden">
+              <a
+                href="{{ url_for('auth.profile') }}"
+                class="text-white hover:text-gray-300 mr-2"
+                >Profile</a
+              >
+              <a
+                href="{{ url_for('auth.logout') }}"
+                class="text-white hover:text-gray-300"
+                >Logout</a
+              >
+            </div>
+            {% else %}
+            <div class="hidden md:block">
+              <a
+                href="{{ url_for('auth.login') }}"
+                class="text-white hover:text-gray-300 mr-2"
+                >Login</a
+              >
+              <a
+                href="{{ url_for('auth.register') }}"
+                class="text-white hover:text-gray-300"
+                >Register</a
+              >
+            </div>
+            <div class="md:hidden">
+              <a
+                href="{{ url_for('auth.login') }}"
+                class="text-white hover:text-gray-300"
+                >Login</a
+              >
+            </div>
+            {% endif %}
+          </div>
+          <button class="md:hidden" id="mobile-menu-button">
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="#F5F6F5"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+          </button>
         </div>
+      </div>
     </nav>
 
     <!-- Hero Section with Search -->
     <section class="hero-section">
-        <div class="hero-backdrop" id="dynamic-hero-backdrop" style="background-image: url('{% if trending_backdrops %}{{ trending_backdrops[0].backdrop_path }}{% else %}https://image.tmdb.org/t/p/original/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg{% endif %}');"></div>
-        <div class="hero-overlay"></div>
-        <div class="container mx-auto px-4 flex items-center justify-center h-full">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6 gradient-text">Discover Your Next Favorite</h1>
-                <form action="/search" method="POST" class="max-w-2xl mx-auto">
-                    <div class="relative search-card glass-effect rounded-lg p-4 flex items-center gap-2">
-                        <input type="text" name="query" id="search-input" placeholder="Search movies, TV shows, or people..." 
-                               class="w-full bg-transparent text-[#F5F6F5] placeholder-[#A9B8B5] focus:outline-none">
-                        <button type="submit" class="search-button text-white px-4 py-2 rounded-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </button>
-                        <div id="autocomplete-items" class="absolute w-full left-0 top-full mt-2 glass-effect rounded-lg hidden max-h-96 overflow-y-auto"></div>
-                    </div>
-                </form>
+      <div
+        class="hero-backdrop"
+        id="dynamic-hero-backdrop"
+        style="background-image: url('{% if trending_backdrops %}{{ trending_backdrops[0].backdrop_path }}{% else %}https://image.tmdb.org/t/p/original/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg{% endif %}');"
+      ></div>
+      <div class="hero-overlay"></div>
+      <div
+        class="container mx-auto px-4 flex items-center justify-center h-full"
+      >
+        <div class="text-center">
+          <h1 class="text-4xl md:text-5xl font-bold mb-6 frameiq-gradient-text">
+            Discover Your Next Favorite
+          </h1>
+          <p class="text-lg text-gray-300 mb-8">
+            Powered by AI • Personalized for You
+          </p>
+          <form action="/search" method="POST" class="max-w-2xl mx-auto">
+            <div
+              class="relative search-card glass-effect rounded-lg p-4 flex items-center gap-2"
+            >
+              <input
+                type="text"
+                name="query"
+                id="search-input"
+                placeholder="Search movies, TV shows, or people..."
+                class="w-full bg-transparent text-[#F5F6F5] placeholder-[#A9B8B5] focus:outline-none"
+              />
+              <button
+                type="submit"
+                class="search-button text-white px-4 py-2 rounded-lg"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </button>
+              <div
+                id="autocomplete-items"
+                class="absolute w-full left-0 top-full mt-2 glass-effect rounded-lg hidden max-h-96 overflow-y-auto"
+              ></div>
             </div>
+          </form>
         </div>
+      </div>
     </section>
 
     <!-- Now Playing Section -->
     <section class="py-16 bg-[#1A4A4F]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Now Playing</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for movie in now_playing %}
-                <div class="movie-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/movie/{{ movie.id }}">
-                        <img src="{{ movie.poster_path }}" alt="{{ movie.title }}" class="movie-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ movie.title }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (movie.id, 'movie') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_watchlist_ids %}
-                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (movie.id, 'movie') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Now Playing</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for movie in now_playing %}
+          <div class="movie-card glass-effect rounded-lg overflow-hidden">
+            <a href="/movie/{{ movie.id }}">
+              <img
+                src="{{ movie.poster_path }}"
+                alt="{{ movie.title }}"
+                class="movie-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ movie.title }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (movie.id, 'movie') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (movie.id, 'movie') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_wishlist_ids
+                %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- Popular Section -->
     <section class="py-16">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Popular</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for movie in popular %}
-                <div class="movie-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/movie/{{ movie.id }}">
-                        <img src="{{ movie.poster_path }}" alt="{{ movie.title }}" class="movie-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ movie.title }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (movie.id, 'movie') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_watchlist_ids %}
-                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (movie.id, 'movie') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Popular</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for movie in popular %}
+          <div class="movie-card glass-effect rounded-lg overflow-hidden">
+            <a href="/movie/{{ movie.id }}">
+              <img
+                src="{{ movie.poster_path }}"
+                alt="{{ movie.title }}"
+                class="movie-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ movie.title }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (movie.id, 'movie') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (movie.id, 'movie') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_wishlist_ids
+                %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- Upcoming Section -->
     <section class="py-16 bg-[#1A4A4F]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Upcoming</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for movie in upcoming %}
-                <div class="movie-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/movie/{{ movie.id }}">
-                        <img src="{{ movie.poster_path }}" alt="{{ movie.title }}" class="movie-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ movie.title }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (movie.id, 'movie') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (movie.id, 'movie') in user_watchlist_ids %}
-                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (movie.id, 'movie') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (movie.id, 'movie') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Upcoming</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for movie in upcoming %}
+          <div class="movie-card glass-effect rounded-lg overflow-hidden">
+            <a href="/movie/{{ movie.id }}">
+              <img
+                src="{{ movie.poster_path }}"
+                alt="{{ movie.title }}"
+                class="movie-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ movie.title }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ movie.release_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (movie.id, 'movie') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (movie.id, 'movie') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-indigo-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (movie.id, 'movie') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_wishlist_ids
+                %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (movie.id, 'movie') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=movie.id, media_type='movie') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- Airing Today Section -->
     <section class="py-16">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Airing Today</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for show in airing_today %}
-                <div class="show-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/tv/{{ show.id }}">
-                        <img src="{{ show.poster_path }}" alt="{{ show.name }}" class="show-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ show.name }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (show.id, 'tv') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_watchlist_ids %}
-                        <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (show.id, 'tv') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Airing Today</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for show in airing_today %}
+          <div class="show-card glass-effect rounded-lg overflow-hidden">
+            <a href="/tv/{{ show.id }}">
+              <img
+                src="{{ show.poster_path }}"
+                alt="{{ show.name }}"
+                class="show-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ show.name }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (show.id, 'tv') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (show.id, 'tv') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_wishlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- On The Air Section -->
     <section class="py-16 bg-[#1A4A4F]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">On The Air</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for show in on_the_air %}
-                <div class="show-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/tv/{{ show.id }}">
-                        <img src="{{ show.poster_path }}" alt="{{ show.name }}" class="show-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ show.name }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (show.id, 'tv') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_watchlist_ids %}
-                        <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (show.id, 'tv') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">On The Air</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for show in on_the_air %}
+          <div class="show-card glass-effect rounded-lg overflow-hidden">
+            <a href="/tv/{{ show.id }}">
+              <img
+                src="{{ show.poster_path }}"
+                alt="{{ show.name }}"
+                class="show-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ show.name }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (show.id, 'tv') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (show.id, 'tv') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_wishlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- Popular TV Shows Section -->
     <section class="py-16">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Popular TV Shows</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for show in popular_shows %}
-                <div class="show-card glass-effect rounded-lg overflow-hidden">
-                    <a href="/tv/{{ show.id }}">
-                        <img src="{{ show.poster_path }}" alt="{{ show.name }}" class="show-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ show.name }}</h3>
-                            <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
-                        </div>
-                    </a>
-                    {% if current_user.is_authenticated %}
-                    <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-                        <!-- Status indicators -->
-                        {% if (show.id, 'tv') in user_viewed_ids %}
-                        <span class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Viewed
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_wishlist_ids %}
-                        <span class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            Wishlist
-                        </span>
-                        {% endif %}
-                        {% if (show.id, 'tv') in user_watchlist_ids %}
-                        <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Watchlist
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Action buttons - allow adding to multiple lists -->
-                        <div class="flex flex-wrap gap-1 justify-center mt-2">
-                            {% if (show.id, 'tv') not in user_watchlist_ids %}
-                            <a href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Watchlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                WL
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_wishlist_ids %}
-                            <a href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}" class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Add to Wishlist">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Wish
-                            </a>
-                            {% endif %}
-                            {% if (show.id, 'tv') not in user_viewed_ids %}
-                            <a href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1" title="Mark as Viewed">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Viewed
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Popular TV Shows</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for show in popular_shows %}
+          <div class="show-card glass-effect rounded-lg overflow-hidden">
+            <a href="/tv/{{ show.id }}">
+              <img
+                src="{{ show.poster_path }}"
+                alt="{{ show.name }}"
+                class="show-image w-full"
+                onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+              />
+              <div class="p-4">
+                <h3
+                  class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+                >
+                  {{ show.name }}
+                </h3>
+                <p class="text-[#A9B8B5] text-xs">{{ show.first_air_date }}</p>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <div class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+              <!-- Status indicators -->
+              {% if (show.id, 'tv') in user_viewed_ids %}
+              <span
+                class="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Viewed
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_wishlist_ids %}
+              <span
+                class="text-xs bg-pink-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+                Wishlist
+              </span>
+              {% endif %} {% if (show.id, 'tv') in user_watchlist_ids %}
+              <span
+                class="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                Watchlist
+              </span>
+              {% endif %}
+
+              <!-- Action buttons - allow adding to multiple lists -->
+              <div class="flex flex-wrap gap-1 justify-center mt-2">
+                {% if (show.id, 'tv') not in user_watchlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_watchlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Watchlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  WL
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_wishlist_ids %}
+                <a
+                  href="{{ url_for('main.add_to_wishlist', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Add to Wishlist"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    ></path>
+                  </svg>
+                  Wish
+                </a>
+                {% endif %} {% if (show.id, 'tv') not in user_viewed_ids %}
+                <a
+                  href="{{ url_for('main.mark_as_viewed', media_id=show.id, media_type='tv') }}"
+                  class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded flex items-center gap-1"
+                  title="Mark as Viewed"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  Viewed
+                </a>
+                {% endif %}
+              </div>
             </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <!-- Trending People Section -->
     <section class="py-16 bg-[#1A4A4F]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Trending People</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {% for person in trending_people %}
-                <a href="/actor/{{ person.id }}" class="person-card glass-effect rounded-lg overflow-hidden">
-                    <img src="{{ person.profile_path }}" alt="{{ person.name }}" class="person-image w-full" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
-                    <div class="p-4">
-                        <h3 class="font-semibold text-sm text-[#F5F6F5] transition-colors">{{ person.name }}</h3>
-                        <p class="text-[#A9B8B5] text-xs">{{ person.known_for_department }}</p>
-                    </div>
-                </a>
-                {% endfor %}
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8 gradient-text">Trending People</h2>
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"
+        >
+          {% for person in trending_people %}
+          <a
+            href="/actor/{{ person.id }}"
+            class="person-card glass-effect rounded-lg overflow-hidden"
+          >
+            <img
+              src="{{ person.profile_path }}"
+              alt="{{ person.name }}"
+              class="person-image w-full"
+              onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'"
+            />
+            <div class="p-4">
+              <h3
+                class="font-semibold text-sm text-[#F5F6F5] transition-colors"
+              >
+                {{ person.name }}
+              </h3>
+              <p class="text-[#A9B8B5] text-xs">
+                {{ person.known_for_department }}
+              </p>
             </div>
+          </a>
+          {% endfor %}
         </div>
+      </div>
     </section>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Profile dropdown
-            const profileButton = document.getElementById('profile-button');
-            const profileMenu = document.getElementById('profile-menu');
-            
-            if (profileButton && profileMenu) {
-                profileButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    profileMenu.classList.toggle('hidden');
-                });
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!profileButton.contains(e.target) && !profileMenu.contains(e.target)) {
-                        profileMenu.classList.add('hidden');
-                    }
-                });
-                
-                // Close dropdown when pressing Escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        profileMenu.classList.add('hidden');
-                    }
-                });
-            }
-            
-            // Mobile menu
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.createElement('div');
-            mobileMenu.className = 'fixed top-16 left-0 right-0 bg-[#1A4A4F] glass-effect hidden';
-            mobileMenu.innerHTML = `
-                <div class="container mx-auto px-4 py-4">
-                    <div class="flex flex-col space-y-4">
-                        <a href="/" class="text-[#F5F6F5] hover:text-[#00C4CC]">Home</a>
-                        <a href="/movies" class="text-[#F5F6F5] hover:text-[#00C4CC]">Movies</a>
-                        <a href="/tv_shows" class="text-[#F5F6F5] hover:text-[#00C4CC]">TV Shows</a>
-                        <a href="/news" class="text-[#F5F6F5] hover:text-[#00C4CC]">News</a>
-                        <a href="/model_selection" class="text-[#F5F6F5] hover:text-[#00C4CC] flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                            </svg>
-                            AI Chat
-                        </a>
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('auth.profile') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Profile</a>
-                            <a href="{{ url_for('main.watchlist') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Watchlist</a>
-                            <a href="{{ url_for('main.wishlist') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Wishlist</a>
-                            <a href="{{ url_for('main.viewed') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Viewed</a>
-                            <a href="{{ url_for('auth.logout') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Logout</a>
-                        {% else %}
-                            <a href="{{ url_for('auth.login') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Login</a>
-                            <a href="{{ url_for('auth.register') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Register</a>
-                        {% endif %}
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(mobileMenu);
+      document.addEventListener('DOMContentLoaded', function() {
+          // Profile dropdown
+          const profileButton = document.getElementById('profile-button');
+          const profileMenu = document.getElementById('profile-menu');
 
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
+          if (profileButton && profileMenu) {
+              profileButton.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  profileMenu.classList.toggle('hidden');
+              });
 
-            // Add floating chat button
-            const chatButton = document.createElement('a');
-            chatButton.href = '/model_selection';
-            chatButton.id = 'chatbot-button';
-            chatButton.className = 'fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg z-40 transition-all duration-300 hover:scale-110';
-            chatButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-            `;
-            document.body.appendChild(chatButton);
+              // Close dropdown when clicking outside
+              document.addEventListener('click', function(e) {
+                  if (!profileButton.contains(e.target) && !profileMenu.contains(e.target)) {
+                      profileMenu.classList.add('hidden');
+                  }
+              });
 
-            // Trending backdrops rotation (using server-provided data)
-            // Note: This is handled by the server-side template, but we need to handle it in JavaScript
-            // The server will render the backdrop paths directly in the HTML
+              // Close dropdown when pressing Escape key
+              document.addEventListener('keydown', function(e) {
+                  if (e.key === 'Escape') {
+                      profileMenu.classList.add('hidden');
+                  }
+              });
+          }
 
-            // This section will be processed by Jinja2 template engine
-            // The resulting JavaScript array will contain the backdrop URLs
+          // Mobile menu
+          const mobileMenuButton = document.getElementById('mobile-menu-button');
+          const mobileMenu = document.createElement('div');
+          mobileMenu.className = 'fixed top-16 left-0 right-0 bg-[#1A4A4F] glass-effect hidden';
+          mobileMenu.innerHTML = `
+              <div class="container mx-auto px-4 py-4">
+                  <div class="flex flex-col space-y-4">
+                      <a href="/" class="text-[#F5F6F5] hover:text-[#00C4CC]">Home</a>
+                      <a href="/movies" class="text-[#F5F6F5] hover:text-[#00C4CC]">Movies</a>
+                      <a href="/tv_shows" class="text-[#F5F6F5] hover:text-[#00C4CC]">TV Shows</a>
+                      <a href="/news" class="text-[#F5F6F5] hover:text-[#00C4CC]">News</a>
+                      <a href="/model_selection" class="text-[#F5F6F5] hover:text-[#00C4CC] flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                          </svg>
+                          AI Chat
+                      </a>
+                      {% if current_user.is_authenticated %}
+                          <a href="{{ url_for('auth.profile') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Profile</a>
+                          <a href="{{ url_for('main.watchlist') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Watchlist</a>
+                          <a href="{{ url_for('main.wishlist') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Wishlist</a>
+                          <a href="{{ url_for('main.viewed') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Viewed</a>
+                          <a href="{{ url_for('auth.logout') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Logout</a>
+                      {% else %}
+                          <a href="{{ url_for('auth.login') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Login</a>
+                          <a href="{{ url_for('auth.register') }}" class="text-[#F5F6F5] hover:text-[#00C4CC]">Register</a>
+                      {% endif %}
+                  </div>
+              </div>
+          `;
+          document.body.appendChild(mobileMenu);
 
-            let currentBackdropIndex = 0;
-            const heroBackdrop = document.getElementById('dynamic-hero-backdrop');
-            // Get backdrop URLs from the template - this array is generated by Jinja2
-            const backdropUrls = [
-                {% for backdrop in trending_backdrops %}
-                "{{ backdrop.backdrop_path }}",
-                {% endfor %}
-            ].filter(url => url && url !== "None"); // Filter out any invalid URLs
+          mobileMenuButton.addEventListener('click', () => {
+              mobileMenu.classList.toggle('hidden');
+          });
 
-            function rotateBackdropImage() {
-                if (backdropUrls.length > 1) {
-                    currentBackdropIndex = (currentBackdropIndex + 1) % backdropUrls.length;
-                    heroBackdrop.style.backgroundImage = `url('${backdropUrls[currentBackdropIndex]}')`;
-                }
-            }
-            
-            // Change backdrop every 8 seconds if we have multiple backdrops
-            if (backdropUrls.length > 1) {
-                setInterval(rotateBackdropImage, 8000);
-            }
+          // Add floating chat button
+          const chatButton = document.createElement('a');
+          chatButton.href = '/model_selection';
+          chatButton.id = 'chatbot-button';
+          chatButton.className = 'fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg z-40 transition-all duration-300 hover:scale-110';
+          chatButton.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+          `;
+          document.body.appendChild(chatButton);
 
-            // Autocomplete
-            const searchInput = document.getElementById('search-input');
-            const autocompleteItems = document.getElementById('autocomplete-items');
+          // Trending backdrops rotation (using server-provided data)
+          // Note: This is handled by the server-side template, but we need to handle it in JavaScript
+          // The server will render the backdrop paths directly in the HTML
 
-            searchInput.addEventListener('input', async function() {
-                const query = this.value.trim();
-                if (query.length < 2) {
-                    autocompleteItems.classList.add('hidden');
-                    return;
-                }
+          // This section will be processed by Jinja2 template engine
+          // The resulting JavaScript array will contain the backdrop URLs
 
-                try {
-                    const response = await fetch(`/autocomplete?query=${encodeURIComponent(query)}`);
-                    const data = await response.json();
+          let currentBackdropIndex = 0;
+          const heroBackdrop = document.getElementById('dynamic-hero-backdrop');
+          // Get backdrop URLs from the template - this array is generated by Jinja2
+          const backdropUrls = [
+              {% if trending_backdrops %}
+              {% for backdrop in trending_backdrops %}
+              "{{ backdrop.backdrop_path }}"{% if not loop.last %},{% endif %}
+              {% endfor %}
+              {% endif %}
+          ].filter(url => url && url !== "None" && url !== ""); // Filter out any invalid URLs
 
-                    if (data.movies.length === 0 && data.shows.length === 0 && data.people.length === 0) {
-                        autocompleteItems.classList.add('hidden');
-                        return;
-                    }
+          function rotateBackdropImage() {
+              if (backdropUrls.length > 1) {
+                  currentBackdropIndex = (currentBackdropIndex + 1) % backdropUrls.length;
+                  heroBackdrop.style.backgroundImage = `url('${backdropUrls[currentBackdropIndex]}')`;
+              }
+          }
 
-                    autocompleteItems.innerHTML = '';
+          // Change backdrop every 8 seconds if we have multiple backdrops
+          if (backdropUrls.length > 1) {
+              setInterval(rotateBackdropImage, 8000);
+          }
 
-                    // Movies
-                    data.movies.forEach(movie => {
-                        const item = document.createElement('div');
-                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
-                        item.innerHTML = `
-                            <img src="https://image.tmdb.org/t/p/w92${movie.poster_path}" alt="${movie.title}" class="w-10 h-15 object-cover rounded">
-                            <div>
-                                <p class="text-[#F5F6F5] text-sm">${movie.title}</p>
-                                <p class="text-[#A9B8B5] text-xs">${movie.release_date || 'N/A'}</p>
-                            </div>
-                        `;
-                        item.addEventListener('click', () => {
-                            window.location.href = `/movie/${movie.id}`;
-                        });
-                        autocompleteItems.appendChild(item);
-                    });
+          // Autocomplete
+          const searchInput = document.getElementById('search-input');
+          const autocompleteItems = document.getElementById('autocomplete-items');
 
-                    // TV Shows
-                    data.shows.forEach(show => {
-                        const item = document.createElement('div');
-                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
-                        item.innerHTML = `
-                            <img src="https://image.tmdb.org/t/p/w92${show.poster_path}" alt="${show.name}" class="w-10 h-15 object-cover rounded">
-                            <div>
-                                <p class="text-[#F5F6F5] text-sm">${show.name}</p>
-                                <p class="text-[#A9B8B5] text-xs">${show.first_air_date || 'N/A'}</p>
-                            </div>
-                        `;
-                        item.addEventListener('click', () => {
-                            window.location.href = `/tv/${show.id}`;
-                        });
-                        autocompleteItems.appendChild(item);
-                    });
+          searchInput.addEventListener('input', async function() {
+              const query = this.value.trim();
+              if (query.length < 2) {
+                  autocompleteItems.classList.add('hidden');
+                  return;
+              }
 
-                    // People
-                    data.people.forEach(person => {
-                        const item = document.createElement('div');
-                        item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
-                        item.innerHTML = `
-                            <img src="https://image.tmdb.org/t/p/w92${person.profile_path}" alt="${person.name}" class="w-10 h-15 object-cover rounded">
-                            <div>
-                                <p class="text-[#F5F6F5] text-sm">${person.name}</p>
-                                <p class="text-[#A9B8B5] text-xs">${person.known_for || 'N/A'}</p>
-                            </div>
-                        `;
-                        item.addEventListener('click', () => {
-                            window.location.href = `/actor/${person.id}`;
-                        });
-                        autocompleteItems.appendChild(item);
-                    });
+              try {
+                  const response = await fetch(`/autocomplete?query=${encodeURIComponent(query)}`);
+                  const data = await response.json();
 
-                    if (autocompleteItems.children.length > 0) {
-                        autocompleteItems.classList.remove('hidden');
-                    } else {
-                        autocompleteItems.classList.add('hidden');
-                    }
-                } catch (error) {
-                    console.error('Error fetching autocomplete:', error);
-                    autocompleteItems.classList.add('hidden');
-                }
-            });
+                  if (data.movies.length === 0 && data.shows.length === 0 && data.people.length === 0) {
+                      autocompleteItems.classList.add('hidden');
+                      return;
+                  }
 
-            // Hide autocomplete when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!searchInput.contains(e.target) && !autocompleteItems.contains(e.target)) {
-                    autocompleteItems.classList.add('hidden');
-                }
-            });
-        });
+                  autocompleteItems.innerHTML = '';
+
+                  // Movies
+                  data.movies.forEach(movie => {
+                      const item = document.createElement('div');
+                      item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                      item.innerHTML = `
+                          <img src="https://image.tmdb.org/t/p/w92${movie.poster_path}" alt="${movie.title}" class="w-10 h-15 object-cover rounded">
+                          <div>
+                              <p class="text-[#F5F6F5] text-sm">${movie.title}</p>
+                              <p class="text-[#A9B8B5] text-xs">${movie.release_date || 'N/A'}</p>
+                          </div>
+                      `;
+                      item.addEventListener('click', () => {
+                          window.location.href = `/movie/${movie.id}`;
+                      });
+                      autocompleteItems.appendChild(item);
+                  });
+
+                  // TV Shows
+                  data.shows.forEach(show => {
+                      const item = document.createElement('div');
+                      item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                      item.innerHTML = `
+                          <img src="https://image.tmdb.org/t/p/w92${show.poster_path}" alt="${show.name}" class="w-10 h-15 object-cover rounded">
+                          <div>
+                              <p class="text-[#F5F6F5] text-sm">${show.name}</p>
+                              <p class="text-[#A9B8B5] text-xs">${show.first_air_date || 'N/A'}</p>
+                          </div>
+                      `;
+                      item.addEventListener('click', () => {
+                          window.location.href = `/tv/${show.id}`;
+                      });
+                      autocompleteItems.appendChild(item);
+                  });
+
+                  // People
+                  data.people.forEach(person => {
+                      const item = document.createElement('div');
+                      item.className = 'p-2 flex items-center gap-2 hover:bg-indigo-900/50 cursor-pointer';
+                      item.innerHTML = `
+                          <img src="https://image.tmdb.org/t/p/w92${person.profile_path}" alt="${person.name}" class="w-10 h-15 object-cover rounded">
+                          <div>
+                              <p class="text-[#F5F6F5] text-sm">${person.name}</p>
+                              <p class="text-[#A9B8B5] text-xs">${person.known_for || 'N/A'}</p>
+                          </div>
+                      `;
+                      item.addEventListener('click', () => {
+                          window.location.href = `/actor/${person.id}`;
+                      });
+                      autocompleteItems.appendChild(item);
+                  });
+
+                  if (autocompleteItems.children.length > 0) {
+                      autocompleteItems.classList.remove('hidden');
+                  } else {
+                      autocompleteItems.classList.add('hidden');
+                  }
+              } catch (error) {
+                  console.error('Error fetching autocomplete:', error);
+                  autocompleteItems.classList.add('hidden');
+              }
+          });
+
+          // Hide autocomplete when clicking outside
+          document.addEventListener('click', (e) => {
+              if (!searchInput.contains(e.target) && !autocompleteItems.contains(e.target)) {
+                  autocompleteItems.classList.add('hidden');
+              }
+          });
+      });
     </script>
-</body>
+    
+    <!-- FrameIQ Particle Background -->
+    <canvas id="frameiq-particles"></canvas>
+    <script src="{{ url_for('static', filename='js/frameiq-animations.js') }}"></script>
+  </body>
 </html>
