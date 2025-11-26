@@ -222,6 +222,9 @@ Overview: {overview}
             Dictionary with ids, documents, metadatas, and distances
         """
         try:
+            # Ensure encoder is loaded (lazy loading)
+            self._ensure_encoder()
+            
             # Generate query embedding
             query_embedding = self.encoder.encode(query).tolist()
             
