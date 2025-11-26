@@ -59,11 +59,16 @@ class MovieVectorDB:
             metadata={"hnsw:space": "cosine"}  # Use cosine similarity
         )
         
-        # Initialize sentence transformer model
-        # Using 'all-MiniLM-L6-v2' - lightweight and fast
-        logger.info("Loading sentence transformer model...")
-        self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
-        logger.info("Vector database initialized successfully")
+        # Initialize sentence transformer model (lazy loading)
+        self.encoder = None  # Don't load on startup
+        logger.info("Vector database initialized successfully (model will load on first use)")
+    
+    def _ensure_encoder(self):
+        """Lazy load the sentence transformer model only when needed"""
+        if self.encoder is None:
+            logger.info("Loading sentence transformer model...")
+            self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
+            logger.info("Model loaded successfully")
     
     def add_movie(
         self, 
