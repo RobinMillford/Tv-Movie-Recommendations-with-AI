@@ -78,6 +78,12 @@ app.register_blueprint(oauth)
 from models import db, User
 db.init_app(app)
 
+# Health check endpoint for Render
+@app.route('/health')
+def health_check():
+    """Simple health check endpoint that responds immediately"""
+    return {'status': 'ok'}, 200
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
