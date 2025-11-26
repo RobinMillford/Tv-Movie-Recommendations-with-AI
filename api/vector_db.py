@@ -357,61 +357,6 @@ Overview: {overview}
         except Exception as e:
             logger.error(f"Error clearing database: {e}")
     
-    def _download_from_huggingface(self) -> None:
-        """
-        Download ChromaDB files from Hugging Face dataset.
-        Decompresses files and sets up the database directory.
-        """
-        try:
-            # Configuration
-            HF_REPO_ID = os.getenv("HF_REPO_ID", "YOUR_USERNAME/movie-embeddings-rag")
-            HF_TOKEN = os.getenv("HF_TOKEN")  # Optional for public datasets
-            
-            if "YOUR_USERNAME" in HF_REPO_ID:
-                logger.error("HF_REPO_ID not configured! Set environment variable.")
-                raise ValueError("HF_REPO_ID environment variable not set")
-            
-            logger.info(f"Downloading dataset from {HF_REPO_ID}...")
-            
-            # Create temp directory for download
-            temp_dir = "/tmp/hf_download_temp"
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Download compressed ChromaDB file
-            try:
-                compressed_db = hf_hub_download(
-                    repo_id=HF_REPO_ID,
-                    filename="chroma.sqlite3.gz",
-                    repo_type="dataset",
-                    token=HF_TOKEN,
-                    local_dir=temp_dir
-                )
-                logger.info("✓ Downloaded compressed database")
-            except Exception as e:
-                logger.error(f"Failed to download from Hugging Face: {e}")
-                raise
-            
-            # Create database directory
-            os.makedirs(self.persist_directory, exist_ok=True)
-            
-            # Decompress database file
-            logger.info("Decompressing database...")
-            db_path = os.path.join(self.persist_directory, "chroma.sqlite3")
-            
-            with gzip.open(compressed_db, 'rb') as f_in:
-                with open(db_path, 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-            
-            logger.info(f"✓ Database ready at {self.persist_directory}")
-            
-            # Clean up temp directory
-            shutil.rmtree(temp_dir, ignore_errors=True)
-            
-        except Exception as e:
-            logger.error(f"Error downloading from Hugging Face: {e}")
-            # Create empty database as fallback
-            logger.warning("Creating empty database as fallback")
-            os.makedirs(self.persist_directory, exist_ok=True)
     
     def _clean_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """

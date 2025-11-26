@@ -12,7 +12,7 @@ import json
 
 # Initialize vector database
 try:
-    vector_db = get_vector_db(persist_directory="./chroma_db")
+    vector_db = get_vector_db()  # Connects to Chroma Cloud
     print(f"✓ RAG: Vector database loaded with {vector_db.count_movies()} media items")
     RAG_ENABLED = True
 except Exception as e:
