@@ -111,6 +111,9 @@ class MovieVectorDB:
                     Optional: 'description' key to bypass automatic description generation
         """
         try:
+            # Ensure encoder is loaded before processing
+            self._ensure_encoder()
+            
             ids = []
             embeddings = []
             documents = []
