@@ -58,50 +58,33 @@ def chat_api():
     )
     
     
-    # SMART RAG STRATEGY: Detect if query is about recent/new content
-    # Keywords that indicate user wants recent content (including common misspellings)
-    recent_keywords = [
-        # Time-based
-        'recent', 'new', 'latest', 'newest', 'current', 'modern',
-        'this year', 'this month', 'today', 'now',
-        'just released', 'just came out', 'just dropped', 'just launched',
-        
-        # Years
-        '2025', '2024', '2023', '2022',
-        
-        # Common misspellings
-        'recnt', 'resent', 'reacent', 'latst', 'lates',
-        
-        # Variations
-        'brand new', 'fresh', 'hot', 'trending', 'popular now',
-        'came out', 'released', 'premiered', 'debuted',
-        'upcoming', 'coming soon', 'coming out',
-        
-        # Slang/casual
-        'what\'s new', 'whats new', 'any new', 'got any new',
-        'show me new', 'show me recent', 'show me latest',
-    ]
-    query_lower = user_message.lower()
-    mentions_recent = any(keyword in query_lower for keyword in recent_keywords)
-    
-    # Extract title and year using LLM
-    analysis_prompt = f"""Extract media information from this query:
+    # SMART RAG STRATEGY: Let LLM analyze if query is about recent/new content
+    # LLM understands context better than keyword matching
+    analysis_prompt = f"""Analyze this user query about movies/TV shows:
 
 Query: "{user_message}"
 
-Extract:
-1. Any specific movie/TV show title mentioned
-2. Year if mentioned
-3. Whether query asks about recent/new content
+Determine:
+1. Is this asking about RECENT/NEW content (2022-2025)? Consider:
+   - Words like: recent, new, latest, newest, current, modern, trending, fresh, hot
+   - Years: 2022, 2023, 2024, 2025
+   - Phrases: just released, came out, this year, brand new, popular now
+   - Misspellings: recnt, latst, etc.
+   
+2. Extract any specific movie/TV show title mentioned
+3. Extract year if mentioned
 
-Return JSON: {{"title": "..." or null, "year": "..." or null, "is_recent_query": true/false}}
+Return JSON: {{"is_recent_content_query": true/false, "title": "..." or null, "year": "..." or null, "confidence": "high/medium/low"}}
 
 Examples:
-- "movie like matrix" → {{"title": null, "year": null, "is_recent_query": false}}
-- "tv show like Black Rabbit" → {{"title": "Black Rabbit", "year": null, "is_recent_query": false}}
-- "suggest me recent tv show like 'All Her Fault'" → {{"title": "All Her Fault", "year": null, "is_recent_query": true}}
-- "new movies from 2025" → {{"title": null, "year": "2025", "is_recent_query": true}}
-- "what came out this year" → {{"title": null, "year": null, "is_recent_query": true}}
+- "movie like matrix" → {{"is_recent_content_query": false, "title": null, "year": null, "confidence": "high"}}
+- "tv show like Black Rabbit" → {{"is_recent_content_query": false, "title": "Black Rabbit", "year": null, "confidence": "medium"}}
+- "recent tv show like Black Rabbit" → {{"is_recent_content_query": true, "title": "Black Rabbit", "year": null, "confidence": "high"}}
+- "suggest me tv show like 'All Her Fault' from 2025" → {{"is_recent_content_query": true, "title": "All Her Fault", "year": "2025", "confidence": "high"}}
+- "new movies from 2025" → {{"is_recent_content_query": true, "title": null, "year": "2025", "confidence": "high"}}
+- "what came out this year" → {{"is_recent_content_query": true, "title": null, "year": null, "confidence": "high"}}
+- "trending shows" → {{"is_recent_content_query": true, "title": null, "year": null, "confidence": "medium"}}
+- "hot new series" → {{"is_recent_content_query": true, "title": null, "year": null, "confidence": "high"}}
 
 IMPORTANT: Return ONLY the JSON object, no markdown, no explanations."""
 
@@ -109,40 +92,41 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no explanations."""
         analysis_response = get_chatbot(model_name).invoke(analysis_prompt)
         analysis_data = json.loads(clean_json_response(analysis_response.content))
         
+        is_recent_query = analysis_data.get("is_recent_content_query", False)
         source_title = analysis_data.get("title")
         source_year = analysis_data.get("year")
-        is_recent_query = analysis_data.get("is_recent_query", False)
+        confidence = analysis_data.get("confidence", "medium")
         
-        # Trigger RAG if:
-        # 1. Query mentions recent keywords OR
-        # 2. LLM detected it's a recent query OR
-        # 3. Title with year 2022-2025 mentioned
-        needs_rag = mentions_recent or is_recent_query
+        # Trigger RAG if LLM detected recent content query
+        needs_rag = is_recent_query
         
-        if source_title and source_year:
+        # Also trigger if year 2022-2025 is mentioned (high confidence)
+        if source_year:
             try:
                 year_int = int(source_year)
                 if 2022 <= year_int <= 2025:
                     needs_rag = True
+                    confidence = "high"
             except:
                 pass
         
         if needs_rag:
             if source_title:
-                print(f"🤖 LLM: Recent content query detected - '{source_title}' ({source_year or 'any year'})")
+                print(f"🤖 LLM: Recent content query ({confidence} confidence) - '{source_title}' ({source_year or 'any year'})")
             else:
-                print(f"🤖 LLM: Recent content query detected - triggering RAG")
+                print(f"🤖 LLM: Recent content query ({confidence} confidence) - triggering RAG")
         else:
-            print(f"🤖 LLM: General query - using LLM knowledge first")
+            print(f"🤖 LLM: General/old content query - using LLM knowledge first")
         
     except Exception as e:
         print(f"⚠️  LLM analysis failed: {e}")
-        # Fallback to keyword detection
-        needs_rag = mentions_recent
+        # Fallback: Simple keyword detection as backup
+        recent_keywords = ['recent', 'new', 'latest', '2024', '2025', '2023', 'trending', 'fresh', 'hot']
+        needs_rag = any(keyword in user_message.lower() for keyword in recent_keywords)
         source_title = None
         source_year = None
         if needs_rag:
-            print(f"🤖 Fallback: Recent keywords detected - triggering RAG")
+            print(f"🤖 Fallback: Keyword detection triggered RAG")
     
     if needs_rag:
         # Use RAG for recent content queries
