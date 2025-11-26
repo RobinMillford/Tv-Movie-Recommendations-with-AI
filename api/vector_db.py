@@ -141,15 +141,15 @@ class MovieVectorDB:
                 documents.append(description)
                 metadatas.append(clean_metadata)
             
-            # Batch add to ChromaDB
-            self.collection.add(
+            # Batch upsert to ChromaDB (add new, update existing)
+            self.collection.upsert(
                 ids=ids,
                 embeddings=embeddings,
                 documents=documents,
                 metadatas=metadatas
             )
             
-            logger.info(f"Added {len(movies)} movies in batch")
+            logger.info(f"Upserted {len(movies)} movies in batch")
             
         except Exception as e:
             logger.error(f"Error adding movies in batch: {e}")
