@@ -267,6 +267,16 @@ def generate_embeddings(
         print("Please run 'python scripts/collect_movies.py' first")
         return
     
+    # Initialize vector database (Chroma Cloud)
+    print(f"\n[Step 2/3] Connecting to Chroma Cloud...")
+    vector_db = MovieVectorDB()
+    print("✓ Connected to Chroma Cloud")
+    
+    # Generate embeddings
+    print(f"\n[Step 3/3] Generating embeddings for {len(movies)} movies...")
+    print("Using upsert - new movies added, existing movies updated")
+    print("This may take several minutes...")
+    
     batch_size = 50
     total_batches = (len(movies) + batch_size - 1) // batch_size
     
