@@ -1,16 +1,12 @@
 """
-Vector Database Manager for Movie Recommendations using ChromaDB
+Vector Database Manager for Movie Recommendations using ChromaDB Cloud
 Handles embedding generation and similarity search for recent movies
 """
 
 import chromadb
-from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 import os
-import shutil
-import gzip
 from typing import List, Dict, Any, Optional
-from huggingface_hub import hf_hub_download, snapshot_download
 import logging
 
 # Set up logging
@@ -20,38 +16,34 @@ logger = logging.getLogger(__name__)
 
 class MovieVectorDB:
     """
-    Manages movie embeddings in ChromaDB for RAG-based recommendations.
+    Manages movie embeddings in ChromaDB Cloud for RAG-based recommendations.
     Uses sentence-transformers for generating embeddings from movie descriptions.
     """
     
-    def __init__(self, persist_directory: str = "./chroma_db", use_hf_dataset: bool = True):
+    def __init__(self):
         """
-        Initialize the vector database.
-        
-        Args:
-            persist_directory: Directory to persist ChromaDB data
-            use_hf_dataset: If True, download from Hugging Face on Render
+        Initialize the vector database with Chroma Cloud.
+        Requires environment variables:
+        - CHROMA_API_KEY
+        - CHROMA_TENANT
+        - CHROMA_DATABASE
         """
-        # Check if running on Render (ephemeral filesystem)
-        is_render = os.getenv("RENDER") == "true"
+        # Get Chroma Cloud credentials from environment
+        api_key = os.getenv("CHROMA_API_KEY")
+        tenant = os.getenv("CHROMA_TENANT")
+        database = os.getenv("CHROMA_DATABASE")
         
-        if use_hf_dataset and is_render:
-            # Use /tmp for caching on Render (ephemeral but faster)
-            self.persist_directory = "/tmp/chroma_db"
-            logger.info("Running on Render - using /tmp for database")
-            
-            # Download from Hugging Face if not exists
-            if not os.path.exists(self.persist_directory):
-                logger.info("Database not found in cache, downloading from Hugging Face...")
-                self._download_from_huggingface()
-            else:
-                logger.info("Using cached database from /tmp")
-        else:
-            self.persist_directory = persist_directory
+        if not all([api_key, tenant, database]):
+            logger.error("Missing Chroma Cloud credentials! Set CHROMA_API_KEY, CHROMA_TENANT, and CHROMA_DATABASE")
+            raise ValueError("Chroma Cloud credentials not configured")
         
-        # Initialize ChromaDB client with persistence
-        logger.info(f"Initializing ChromaDB at {self.persist_directory}")
-        self.client = chromadb.PersistentClient(path=self.persist_directory)
+        # Initialize ChromaDB Cloud client
+        logger.info(f"Connecting to Chroma Cloud (tenant: {tenant}, database: {database})")
+        self.client = chromadb.CloudClient(
+            api_key=api_key,
+            tenant=tenant,
+            database=database
+        )
         
         # Get or create collection for movies
         self.collection = self.client.get_or_create_collection(
@@ -531,17 +523,14 @@ Overview: {overview}
 _vector_db_instance = None
 
 
-def get_vector_db(persist_directory: str = "./chroma_db") -> MovieVectorDB:
+def get_vector_db() -> MovieVectorDB:
     """
     Get or create the singleton vector database instance.
     
-    Args:
-        persist_directory: Directory to persist ChromaDB data
-    
     Returns:
-        MovieVectorDB instance
+        MovieVectorDB instance connected to Chroma Cloud
     """
     global _vector_db_instance
     if _vector_db_instance is None:
-        _vector_db_instance = MovieVectorDB(persist_directory)
+        _vector_db_instance = MovieVectorDB()
     return _vector_db_instance

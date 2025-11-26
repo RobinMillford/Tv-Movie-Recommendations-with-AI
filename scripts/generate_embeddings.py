@@ -233,15 +233,13 @@ def prepare_metadata(movie: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def generate_embeddings(
-    input_file: str = "data/movies.json",
-    persist_directory: str = "./chroma_db"
+    input_file: str = "data/movies.json"
 ) -> None:
     """
-    Generate embeddings for all movies and store in vector database.
+    Generate embeddings for all movies and store in Chroma Cloud.
     
     Args:
         input_file: Path to movies JSON file
-        persist_directory: ChromaDB persistence directory
     """
     print("=" * 70)
     print("GENERATING RICH EMBEDDINGS FOR MOVIES")
@@ -269,9 +267,9 @@ def generate_embeddings(
         print("Please run 'python scripts/collect_movies.py' first")
         return
     
-    # Initialize vector database
-    print(f"\n[Step 2/3] Initializing vector database at {persist_directory}...")
-    vector_db = MovieVectorDB(persist_directory=persist_directory)
+    # Initialize vector database (Chroma Cloud)
+    print(f"\n[Step 2/3] Connecting to Chroma Cloud...")
+    vector_db = MovieVectorDB()
     
     # Clear existing data (optional - comment out if you want to keep existing)
     print("Clearing existing database...")
@@ -353,6 +351,5 @@ def generate_embeddings(
 
 if __name__ == "__main__":
     generate_embeddings(
-        input_file="data/movies.json",
-        persist_directory="./chroma_db"
+        input_file="data/movies.json"
     )

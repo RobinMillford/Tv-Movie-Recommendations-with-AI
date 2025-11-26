@@ -27,22 +27,13 @@ jobs:
       - name: Collect new movies from TMDb
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python scripts/collect_media.py
 
-      - name: Generate embeddings
+      - name: Generate embeddings and upload to Chroma Cloud
+        env:
+          CHROMA_API_KEY: ${{ secrets.CHROMA_API_KEY }}
+          CHROMA_TENANT: ${{ secrets.CHROMA_TENANT }}
+          CHROMA_DATABASE: ${{ secrets.CHROMA_DATABASE }}
         run: |
           python scripts/generate_embeddings.py
-
-      - name: Optimize and compress data
-        run: |
-          python scripts/optimize_movies.py
-
-      - name: Upload to Hugging Face
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
-        run: |
-          python scripts/upload_to_huggingface.py
