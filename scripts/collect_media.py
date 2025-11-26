@@ -8,12 +8,8 @@ import os
 from datetime import datetime, timedelta
 import json
 import time
-import gzip
-import shutil
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from deduplicate_movies import load_existing_movies, merge_movies, save_movies, print_statistics
-from huggingface_hub import hf_hub_download
 
 # Load environment variables
 load_dotenv()
@@ -23,47 +19,6 @@ BASE_URL = "https://api.themoviedb.org/3"
 
 # Rate limiting
 REQUEST_DELAY = 0.25  # 4 requests per second (TMDb limit)
-
-
-def download_existing_data_from_hf() -> None:
-    """Download existing movies.json.gz from Hugging Face if it doesn't exist locally."""
-    if os.path.exists("data/movies.json"):
-        print("✓ Using existing local data/movies.json")
-        return
-    
-    try:
-        HF_REPO_ID = os.getenv("HF_REPO_ID")
-        HF_TOKEN = os.getenv("HF_TOKEN")
-        
-        if not HF_REPO_ID or "YOUR_USERNAME" in HF_REPO_ID:
-            print("⚠️  HF_REPO_ID not configured, starting with empty dataset")
-            return
-        
-        print(f"📥 Downloading existing data from {HF_REPO_ID}...")
-        
-        # Download compressed file
-        compressed_file = hf_hub_download(
-            repo_id=HF_REPO_ID,
-            filename="movies.json.gz",
-            repo_type="dataset",
-            token=HF_TOKEN,
-            local_dir="./data_temp"
-        )
-        
-        # Decompress
-        os.makedirs("data", exist_ok=True)
-        with gzip.open(compressed_file, 'rb') as f_in:
-            with open("data/movies.json", 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        
-        # Cleanup temp
-        shutil.rmtree("./data_temp", ignore_errors=True)
-        
-        print("✓ Downloaded and decompressed existing data")
-        
-    except Exception as e:
-        print(f"⚠️  Could not download from HF (first run?): {e}")
-        print("   Starting with empty dataset")
 
 
 def make_request(url: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -349,32 +304,47 @@ def collect_media(
     max_pages_per_year: int = 10,
     output_file: str = "data/movies.json"
 ) -> List[Dict[str, Any]]:
-    """Main function to collect comprehensive media data."""
+    """
+    Main function to collect comprehensive media data.
+    Saves to local JSON file which will be used by generate_embeddings.py
+    to upload to Chroma Cloud.
+    """
     print("=" * 70)
     print("COMPREHENSIVE MEDIA DATA COLLECTION")
     print("=" * 70)
     
-    # Download existing data from Hugging Face first
-    print("\n[Step 0/4] Downloading existing data from Hugging Face...")
-    download_existing_data_from_hf()
+    # Load existing data if it exists (for deduplication)
+    print("\n[Step 1/4] Loading existing data...")
+    existing_media = {}
+    if os.path.exists(output_file):
+        with open(output_file, 'r', encoding='utf-8') as f:
+            existing_list = json.load(f)
+            # Index by composite ID
+            for item in existing_list:
+                media_type = item.get('media_type', 'movie')
+                composite_id = f"{media_type}_{item['id']}"
+                existing_media[composite_id] = item
+        print(f"✓ Loaded {len(existing_media)} existing items")
+    else:
+        print("✓ No existing data found, starting fresh")
     
-    # Step 1: Fetch IDs
-    print("\n[Step 1/4] Fetching media IDs...")
+    # Step 2: Fetch IDs
+    print("\n[Step 2/4] Fetching media IDs...")
     movie_ids = fetch_recent_movie_ids(years_back, max_pages_per_year)
     tv_ids = fetch_recent_tv_ids(years_back, max_pages_per_year)
     
-    # Step 2: Fetch details
+    # Step 3: Fetch details
     all_media = []
     
     # Movies
-    print(f"\n[Step 2/4] Fetching data for {len(movie_ids)} movies...")
+    print(f"\n[Step 3/4] Fetching data for {len(movie_ids)} movies...")
     for i, movie_id in enumerate(movie_ids, 1):
         if i % 50 == 0: print(f"  Progress: {i}/{len(movie_ids)}")
         data = fetch_comprehensive_movie_data(movie_id)
         if data: all_media.append(data)
         
     # TV Shows
-    print(f"\n[Step 2/3] Fetching data for {len(tv_ids)} TV shows...")
+    print(f"\n[Step 3/4] Fetching data for {len(tv_ids)} TV shows...")
     for i, tv_id in enumerate(tv_ids, 1):
         if i % 50 == 0: print(f"  Progress: {i}/{len(tv_ids)}")
         data = fetch_comprehensive_tv_data(tv_id)
@@ -382,18 +352,38 @@ def collect_media(
     
     print(f"\n✓ Successfully fetched {len(all_media)} items")
     
-    # Step 3: Merge
-    print(f"\n[Step 3/4] Merging with existing data...")
-    existing_media = load_existing_movies(output_file)
-    merged_media, stats = merge_movies(existing_media, all_media)
-    print_statistics(stats)
+    # Step 4: Merge with existing (deduplicate)
+    print(f"\n[Step 4/4] Merging and deduplicating...")
+    merged_media = {}
+    merged_media.update(existing_media)  # Start with existing
     
-    # Step 4: Save
-    print(f"\n[Step 4/4] Saving to {output_file}...")
-    save_movies(merged_media, output_file)
-    print(f"✓ Saved {len(merged_media)} items to {output_file}")
+    # Add/update with new data
+    new_count = 0
+    updated_count = 0
+    for item in all_media:
+        media_type = item.get('media_type', 'movie')
+        composite_id = f"{media_type}_{item['id']}"
+        
+        if composite_id in merged_media:
+            updated_count += 1
+        else:
+            new_count += 1
+        merged_media[composite_id] = item
     
-    return merged_media
+    print(f"  New items: {new_count}")
+    print(f"  Updated items: {updated_count}")
+    print(f"  Total items: {len(merged_media)}")
+    
+    # Save to file
+    os.makedirs("data", exist_ok=True)
+    merged_list = list(merged_media.values())
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(merged_list, f, ensure_ascii=False, indent=2)
+    
+    print(f"\n✓ Saved {len(merged_list)} items to {output_file}")
+    print("Next step: Run generate_embeddings.py to upload to Chroma Cloud")
+    
+    return merged_list
 
 
 if __name__ == "__main__":
