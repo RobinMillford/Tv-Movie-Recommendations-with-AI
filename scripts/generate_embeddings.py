@@ -318,7 +318,7 @@ def generate_embeddings(
     print("EMBEDDING GENERATION COMPLETE")
     print("=" * 70)
     print(f"Total movies in database: {total_count}")
-    print(f"Database location: {persist_directory}")
+    print("Database location: Chroma Cloud")
     
     # Test search
     print("\n" + "=" * 70)
