@@ -1,18 +1,5 @@
 # FrameIQ - Intelligent Entertainment Discovery
 
-FrameIQ (formerly MovieHub) is a next-generation entertainment discovery platform that leverages advanced AI to provide hyper-personalized recommendations for movies, TV shows, and anime.
-
-![FrameIQ Interface](images/MovieTvHub-Discover-Movies-Shows-People-04-16-2025_11_22_PM.png)
-
-## 🌐 Live Demo
-
-Check out the live demo on Google Cloud Run: [https://movie-recommendations-344233295407.asia-south1.run.app/](https://movie-recommendations-344233295407.asia-south1.run.app/)
-
-## 🚀 Key Features
-
-### 🧠 Advanced AI Chatbot (RAG + Hybrid Search)
-
-- **Intelligent Retrieval:** Uses **Retrieval-Augmented Generation (RAG)** to query a vector database of over 10,000+ movies and TV shows.
 - **Hybrid Search:** Combines semantic vector search (ChromaDB) with keyword search (BM25) for high-precision results.
 - **Smart Fallback System:**
   1.  **LLM Knowledge:** First checks the LLM's internal knowledge.
